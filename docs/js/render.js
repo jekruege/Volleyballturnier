@@ -29,12 +29,13 @@ export function resultBadge(g) {
 }
 
 export function standingsTable(rows) {
-  const head = '<tr><th>#</th><th class="left">Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Sätze</th><th>Diff</th><th>Punkte</th><th>Diff</th></tr>';
+  // Spalten mit "opt" werden auf schmalen Bildschirmen (Handy hochkant) ausgeblendet.
+  const head = '<tr><th>#</th><th class="left">Team</th><th>Sp</th><th>S</th><th class="opt">U</th><th class="opt">N</th><th>Sätze</th><th class="opt">Diff</th><th class="opt">Punkte</th><th title="Punktdifferenz">Diff</th></tr>';
   const body = rows.map((r) => `<tr class="${r.tie ? 'tie' : ''}">
     <td>${r.place}</td><td class="left">${esc(r.teamName)}${r.tie ? ' <span title="Gleichstand – Entscheidung durch Turnierleitung">⚖</span>' : ''}</td>
-    <td>${r.played}</td><td>${r.wins}</td><td>${r.draws}</td><td>${r.losses}</td>
-    <td>${r.setsFor}:${r.setsAgainst}</td><td>${r.setDiff > 0 ? '+' : ''}${r.setDiff}</td>
-    <td>${r.pointsFor}:${r.pointsAgainst}</td><td>${r.pointDiff > 0 ? '+' : ''}${r.pointDiff}</td></tr>`).join('');
+    <td>${r.played}</td><td>${r.wins}</td><td class="opt">${r.draws}</td><td class="opt">${r.losses}</td>
+    <td>${r.setsFor}:${r.setsAgainst}</td><td class="opt">${r.setDiff > 0 ? '+' : ''}${r.setDiff}</td>
+    <td class="opt">${r.pointsFor}:${r.pointsAgainst}</td><td>${r.pointDiff > 0 ? '+' : ''}${r.pointDiff}</td></tr>`).join('');
   return `<div class="tablewrap"><table class="standings"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 

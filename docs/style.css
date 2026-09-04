@@ -16,6 +16,7 @@ h3 { font-size: 1rem; margin: 0.8rem 0 0.3rem; }
 .left { text-align: left !important; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.6rem 1rem; background: var(--primary); color: #fff; }
 .topbar a { color: #fff; }
+.topbar .links a + a { margin-left: 0.8rem; }
 main { padding: 0.75rem 1rem 3rem; max-width: 1100px; margin: 0 auto; }
 main.narrow { max-width: 640px; }
 .btn { display: inline-block; padding: 0.55rem 1rem; border-radius: 8px; border: 1px solid var(--primary); background: #fff; color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
@@ -194,3 +195,33 @@ table.d-table .pos { width: 1.6em; font-weight: 700; }
 .d-rank .src { color: #666; font-size: 0.7em; margin-left: auto; align-self: center; }
 .d-empty { font-size: 1.3em; color: #666; margin-top: 2em; text-align: center; }
 .d-hint { position: fixed; inset: auto 0 0 0; background: #222; color: #fff; padding: 0.6em 1em; font-size: 0.75em; text-align: center; }
+
+/* Handy hochkant: reduzierte Darstellung der Übersicht */
+.pastbar { text-align: center; margin: 0.3rem 0 0.8rem; }
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  main { padding: 0.5rem 0.6rem 3rem; }
+  .topbar { padding: 0.5rem 0.7rem; font-size: 0.9rem; }
+  .topbar > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tabs { gap: 0.25rem; margin: 0.4rem 0 0.6rem; }
+  .tabs button { padding: 0.35rem 0.65rem; font-size: 0.9rem; }
+  .progress { gap: 0.6rem; font-size: 0.8rem; margin-bottom: 0.3rem; }
+  .progress .opt, table.standings .opt, .topbar .opt { display: none; }
+  .topbar .links { white-space: nowrap; }
+  .filters { gap: 0.4rem; }
+  .filters label { flex: 1; display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; }
+  .filters select { flex: 1; min-width: 0; padding: 0.3rem; }
+  .slot > .slothead { margin: 0.5rem 0 0.25rem; font-size: 0.95rem; }
+  .slotgames { grid-template-columns: 1fr; gap: 0.35rem; }
+  .g { padding: 0.35rem 0.6rem; border-left-width: 5px; }
+  .g .head { font-size: 0.72rem; }
+  .g .row { font-size: 0.95rem; }
+  .g .ref { font-size: 0.72rem; }
+  h2 { font-size: 1.05rem; margin: 0.9rem 0 0.35rem; }
+  h3 { font-size: 0.95rem; }
+  table.standings { font-size: 0.85rem; }
+  table.standings th, table.standings td { padding: 0.3rem 0.3rem; }
+  table.standings td.left { min-width: 0; }
+  .legend { font-size: 0.72rem; }
+  .ranking ol { padding-left: 1.4rem; }
+}

@@ -8,6 +8,8 @@ let view = null;
 let tab = localStorage.getItem('vt.tab') || 'plan';
 let fieldFilter = localStorage.getItem('vt.field') || 'all';
 let teamFilter = '';
+const narrow = () => window.matchMedia('(max-width: 640px)').matches;
+let showPast = false;
 
 async function load() {
   try {
@@ -36,13 +38,21 @@ function renderPlan() {
     <label>Feld <select id="fieldFilter"><option value="all">alle Felder</option>${fields.map((f) => `<option value="${f.number}" ${String(fieldFilter) === String(f.number) ? 'selected' : ''}>${esc(f.name)}</option>`).join('')}</select></label>
     <label>Team <select id="teamFilter"><option value="">alle Teams</option>${teams.map((t) => `<option value="${t.id}" ${teamFilter === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label>
   </div>`;
+  // Auf dem Handy: bereits gespielte Zeitfenster standardmäßig ausblenden
+  const slotDone = (s) => s.games.length > 0 && s.games.every((g) => g.status === 'done');
+  const compact = narrow() && !showPast && !teamFilter;
+  const hiddenCount = compact ? view.slots.filter(slotDone).length : 0;
+  const hasUpcoming = view.slots.some((s) => !slotDone(s));
+  if (compact && hiddenCount > 0 && hasUpcoming) html += `<p class="pastbar"><button class="link" id="showPast">${hiddenCount} gespielte Zeitfenster einblenden</button></p>`;
   for (const s of view.slots) {
     let games = s.games;
+    if (compact && hasUpcoming && slotDone(s)) continue;
     if (fieldFilter !== 'all') games = games.filter((g) => String(g.field) === String(fieldFilter));
     if (teamFilter) games = games.filter((g) => g.team1Id === teamFilter || g.team2Id === teamFilter || g.refereeId === teamFilter);
     if (!games.length) continue;
     html += `<div class="slot ${isNow(s) ? 'now' : ''}"><div class="slothead">${esc(s.time)}</div><div class="slotgames">${games.map((g) => gameCard(view, g)).join('')}</div></div>`;
   }
+  if (narrow() && showPast) html += '<p class="pastbar"><button class="link" id="hidePast">Gespielte Zeitfenster ausblenden</button></p>';
   html += '<p class="legend">Farbcode: Gruppen (blau/rosa/grün), Gold (gelb), Silber (grau), Bronze (braun), Finale (grün).</p>';
   return html;
 }
@@ -87,7 +97,7 @@ function render() {
   const p = view.progress;
   const tabs = [['plan', 'Spielplan'], ['tables', 'Tabellen'], ['ranking', 'Finale & Platzierung'], ['teams', 'Teams']];
   let html = `<div class="tabs">${tabs.map(([id, label]) => `<button data-tab="${id}" class="${tab === id ? 'active' : ''}">${label}</button>`).join('')}</div>
-    <div class="progress"><span>1. Gruppenphase: ${p[0].done}/${p[0].total}</span><span>2. Phase: ${p[1].done}/${p[1].total}</span><span>Finale: ${p[2].done}/${p[2].total}</span><span>Stand: ${new Date().toLocaleTimeString('de-DE')}</span></div>`;
+    <div class="progress"><span>Gruppenphase ${p[0].done}/${p[0].total}</span><span>2. Phase ${p[1].done}/${p[1].total}</span><span class="opt">Finale ${p[2].done}/${p[2].total}</span><span class="opt">Stand ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span></div>`;
   if (tab === 'plan') html += renderPlan();
   else if (tab === 'tables') html += renderTables();
   else if (tab === 'ranking') html += renderRanking();
@@ -98,7 +108,11 @@ function render() {
   if (ff) ff.addEventListener('change', () => { fieldFilter = ff.value; localStorage.setItem('vt.field', fieldFilter); render(); });
   const tf = document.getElementById('teamFilter');
   if (tf) tf.addEventListener('change', () => { teamFilter = tf.value; render(); });
+  const sp = document.getElementById('showPast'); if (sp) sp.addEventListener('click', () => { showPast = true; render(); });
+  const hp = document.getElementById('hidePast'); if (hp) hp.addEventListener('click', () => { showPast = false; render(); window.scrollTo(0, 0); });
 }
+let lastNarrow = narrow();
+window.addEventListener('resize', () => { if (narrow() !== lastNarrow) { lastNarrow = narrow(); render(); } });
 
 load();
 setInterval(load, 20000);
