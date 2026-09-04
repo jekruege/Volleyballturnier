@@ -60,6 +60,81 @@ export function gameCard(view, g) {
   </div>`;
 }
 
+// ---------------------------------------------------------------------------
+// 2. Phase: Weiterkommen, Turnierbaum
+
+/** Tabelle "Wer kommt wohin": Gruppenplatz -> Runde, mit Teamnamen sobald bekannt. */
+export function advancementTable(view) {
+  const rows = [];
+  for (const g of view.groups) {
+    const size = g.teams.length;
+    for (let p = 1; p <= size; p += 1) {
+      const round = view.rounds.find((r) => r.seeds.some((sd) => sd.group === g.id && sd.place === p));
+      const known = view.placements && view.placements.phase1 && view.placements.phase1[g.id];
+      const teamId = known ? known[p - 1] : null;
+      const row = g.table.find((r) => r.teamId === teamId) || g.table[p - 1];
+      const name = teamId ? (view.teams.find((t) => t.id === teamId) || {}).name : (row ? `${row.teamName}` : '');
+      rows.push({ group: g.id, place: p, name, provisional: !teamId, round });
+    }
+  }
+  const byGroup = view.groups.map((g) => `<table class="standings advance"><thead><tr><th colspan="3" class="left">${esc(g.name)}</th></tr></thead><tbody>
+    ${rows.filter((r) => r.group === g.id).map((r) => `<tr class="tier-${r.round ? r.round.tier : 'none'}"><td>${r.place}.</td><td class="left ${r.provisional ? 'muted' : ''}">${esc(r.name || '–')}${r.provisional && r.name ? ' *' : ''}</td><td class="left">→ ${esc(r.round ? r.round.name : '–')}</td></tr>`).join('')}
+  </tbody></table>`).join('');
+  const provisional = rows.some((r) => r.provisional && r.name);
+  return `<div class="grid2">${byGroup}</div>${provisional ? '<p class="legend">* vorläufig nach aktuellem Tabellenstand – endgültig nach Abschluss der Gruppenphase.</p>' : ''}`;
+}
+
+function matchBox(g, title) {
+  const r = g.result;
+  const w1 = r && r.winner === 1; const w2 = r && r.winner === 2;
+  return `<div class="match ${g.status}"><div class="mt">${esc(title || g.sublabel)}</div>
+    <div class="mrow ${w1 ? 'win' : ''}"><span class="${g.team1Known ? '' : 'muted'}">${esc(g.team1)}</span><span class="sc">${r ? r.sets1 : ''}</span></div>
+    <div class="mrow ${w2 ? 'win' : ''}"><span class="${g.team2Known ? '' : 'muted'}">${esc(g.team2)}</span><span class="sc">${r ? r.sets2 : ''}</span></div>
+    ${g.setsText ? `<div class="msets">${esc(g.setsText)}</div>` : ''}</div>`;
+}
+
+/** Turnierbaum einer K.o.-Runde mit 4 Teams (HF1, HF2 -> Finale, Spiel um Platz 3). */
+export function koBracket(view, round) {
+  const by = (n) => round.games.find((g) => g.id.endsWith(`-${n}`));
+  const hf1 = by(1); const hf2 = by(2); const fin = by(3); const p3 = by(4);
+  if (!hf1 || !hf2 || !fin || !p3) return '';
+  const out = (place) => { const pl = round.placements.find((x) => x.place === place); return pl && pl.next ? pl.next.label : ''; };
+  const res = (place) => { const pl = round.placements.find((x) => x.place === place); return pl && pl.teamName ? `<strong>${esc(pl.teamName)}</strong>` : '<span class="muted">offen</span>'; };
+  return `<div class="bracket">
+    <div class="bcol"><div class="bhead">Halbfinale</div>${matchBox(hf1, 'Halbfinale 1')}${matchBox(hf2, 'Halbfinale 2')}</div>
+    <div class="bcol"><div class="bhead">Finale / Platz 3</div>${matchBox(fin, 'Finale')}${matchBox(p3, 'Spiel um Platz 3')}</div>
+    <div class="bcol bout"><div class="bhead">Ergebnis</div>
+      <div class="bo"><span class="pl">1.</span>${res(1)}<span class="nx">→ ${esc(out(1))}</span></div>
+      <div class="bo"><span class="pl">2.</span>${res(2)}<span class="nx">→ ${esc(out(2))}</span></div>
+      <div class="bo"><span class="pl">3.</span>${res(3)}<span class="nx">→ ${esc(out(3))}</span></div>
+      <div class="bo"><span class="pl">4.</span>${res(4)}<span class="nx">→ ${esc(out(4))}</span></div>
+    </div></div>`;
+}
+
+/** Zeile unter einer Dreier-Runde: 1. → Finale, 2. → Kleines Finale, 3. → Platz 5–6 */
+export function roundOutlook(round) {
+  return `<p class="outlook">${round.placements.map((p) => `<span class="pl">${p.place}.</span> ${p.teamName ? `<strong>${esc(p.teamName)}</strong>` : '<span class="muted">offen</span>'} <span class="nx">→ ${esc(p.next ? p.next.label : '')}</span>`).join('<span class="sep"> · </span>')}</p>`;
+}
+
+/** Kompletter Abschnitt "2. Phase" (Übersicht, Admin, Druck). */
+export function phase2Section(view) {
+  let html = '<h2>Weiterkommen aus den Gruppen</h2>';
+  html += advancementTable(view);
+  html += '<h2>2. Phase</h2>';
+  if (view.phase < 2) html += '<p class="muted">Die Teams der Runden stehen nach Abschluss der 1. Gruppenphase fest. Bis dahin zeigen die Runden die vorläufige Einteilung.</p>';
+  for (const r of view.rounds) {
+    html += `<section class="round tier-${r.tier}"><h3>${esc(r.name)} <span class="muted small">(${r.seeds.map((sd) => esc(sd.label)).join(', ')})</span></h3>`;
+    if (r.table) {
+      html += r.table.length ? standingsTable(r.table) : `<p class="muted">${r.seeds.map((sd) => esc(sd.teamName || sd.label)).join(', ')}</p>`;
+      html += roundOutlook(r);
+    } else {
+      html += koBracket(view, r);
+    }
+    html += '</section>';
+  }
+  return html;
+}
+
 export function setTitle(view, suffix) {
   const t = view ? view.tournament.name : 'Volleyballturnier';
   document.title = suffix ? `${suffix} – ${t}` : t;
@@ -196,8 +271,6 @@ export function planPage(view) {
 
 export function tablesPage(view) {
   const groups = view.groups.map((g) => `<section><h2>${esc(g.name)}</h2>${standingsTable(g.table)}</section>`).join('');
-  const rounds = view.rounds.filter((r) => r.table).map((r) => `<section><h2>${esc(r.name)}</h2>${standingsTable(r.table)}</section>`).join('');
-  const ko = view.rounds.filter((r) => !r.table).map((r) => `<section><h2>${esc(r.name)}</h2><ul class="plain">${r.games.map((g) => `<li>${esc(g.sublabel)}: ${esc(g.team1)} – ${esc(g.team2)} ${g.setsText ? `<strong>${esc(g.setsText)}</strong>` : ''}</li>`).join('')}</ul></section>`).join('');
   const ranking = `<section><h2>Endplatzierung</h2><table class="standings"><tbody>${view.ranking.map((r) => `<tr><td>${r.place}.</td><td class="left">${esc(r.teamName || '–')}</td><td class="left muted">${esc(r.source)}</td></tr>`).join('')}</tbody></table></section>`;
-  return `<h1 class="printtitle">${esc(view.tournament.name)} – Tabellen</h1>${groups}${rounds}${ko}${ranking}`;
+  return `<h1 class="printtitle">${esc(view.tournament.name)} – Tabellen</h1>${groups}<section>${phase2Section(view)}</section>${ranking}`;
 }

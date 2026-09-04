@@ -3,7 +3,7 @@ import * as T from '../engine/tournament.js';
 import { listFormats } from '../engine/formats/index.js';
 import { validateSets } from '../engine/results.js';
 import { api, adminMutate, usingSupabase } from './api.js';
-import { esc, standingsTable } from './render.js';
+import { esc, standingsTable, phase2Section } from './render.js';
 
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -233,16 +233,9 @@ function renderGames() {
 function renderTables() {
   let html = '<div class="grid2">';
   for (const g of view.groups) html += `<section><h2>${esc(g.name)}</h2>${standingsTable(g.table)}</section>`;
-  html += '</div><h2>2. Phase</h2>';
-  if (view.phase < 2) html += '<p class="muted">Die Einteilung der Runden steht nach Abschluss der 1. Gruppenphase fest.</p>';
-  html += '<div class="grid2">';
-  for (const r of view.rounds) {
-    html += `<section><h3>${esc(r.name)}</h3>`;
-    if (r.table) html += r.table.length ? standingsTable(r.table) : `<p class="muted">${r.seeds.map((s) => esc(s.label)).join(', ')}</p>`;
-    else html += `<ul class="plain">${r.games.map((g) => `<li>${esc(g.sublabel)}: ${esc(g.team1)} – ${esc(g.team2)} ${g.setsText ? `<strong>${esc(g.setsText)}</strong>` : ''}</li>`).join('')}</ul>`;
-    html += '</section>';
-  }
-  html += '</div><h2>Endplatzierung</h2><div class="tablewrap"><table class="standings"><tbody>';
+  html += '</div>';
+  html += phase2Section(view);
+  html += '<h2>Endplatzierung</h2><div class="tablewrap"><table class="standings"><tbody>';
   html += view.ranking.map((r) => `<tr><td>${r.place}.</td><td class="left">${esc(r.teamName || '–')}</td><td class="left muted">${esc(r.source)}</td></tr>`).join('');
   html += '</tbody></table></div><p class="inline"><a class="btn" href="print.html?type=tabellen" target="_blank">Tabellen drucken</a></p>';
   html += '<p class="legend">Sortierung: Siege → Satzdifferenz → Punktdifferenz → direkter Vergleich. ⚖ = Gleichstand, Entscheidung durch die Turnierleitung.</p>';

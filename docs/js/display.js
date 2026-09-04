@@ -2,7 +2,7 @@
 // Parameter: ?s=12 (Sekunden je Seite), ?plan=4 (Zeitfenster im Spielplan)
 import * as T from '../engine/tournament.js';
 import { api } from './api.js';
-import { esc, breakRows } from './render.js';
+import { esc, breakRows, koBracket } from './render.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -87,7 +87,7 @@ function renderTable(rows, games, compact = false) {
 }
 
 function renderKo(r) {
-  return `<table class="d-table"><tbody>${r.games.map((g) => `<tr><td class="left">${esc(g.sublabel)}</td><td class="left team ${g.result && g.result.winner === 1 ? 'q' : ''}">${esc(g.team1)}</td><td class="num">${esc(g.setsText || '–')}</td><td class="left team">${esc(g.team2)}</td></tr>`).join('')}</tbody></table>`;
+  return `<div class="d-bracket">${koBracket(view, r)}</div>`;
 }
 
 function renderRanking() {

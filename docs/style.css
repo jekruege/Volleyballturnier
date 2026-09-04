@@ -241,3 +241,32 @@ tr.break th, tr.break td { background: #fff3c4 !important; font-weight: 600; tex
 .d-plan tr.break td { background: #fff3c4; font-weight: 700; }
 table.admin.schedule input[type=number] { width: 4.5rem; }
 table.admin.schedule input[type=text] { min-width: 9rem; }
+
+/* 2. Phase: Weiterkommen und Turnierbaum */
+table.advance td:first-child { width: 2rem; }
+table.advance tr.tier-gold td { background: #fff8dc; } table.advance tr.tier-silber td { background: #f1f3f5; } table.advance tr.tier-bronze td { background: #f8ebdf; }
+section.round { margin: 0.8rem 0 1.4rem; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid var(--line); border-left-width: 6px; background: var(--card); }
+section.round.tier-gold { border-left-color: #d9a400; } section.round.tier-silber { border-left-color: #8e99a4; } section.round.tier-bronze { border-left-color: #b8702e; }
+section.round h3 { margin-top: 0.2rem; }
+.outlook { margin: 0.5rem 0 0; font-size: 0.92rem; }
+.outlook .pl, .bo .pl { font-weight: 700; margin-right: 0.2rem; }
+.outlook .nx, .bo .nx { color: var(--muted); }
+.outlook .sep { color: var(--line); }
+.bracket { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; align-items: stretch; }
+.bcol { display: flex; flex-direction: column; gap: 0.6rem; justify-content: space-around; }
+.bhead { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.match { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 0.35rem 0.6rem; position: relative; }
+.match .mt { font-size: 0.75rem; color: var(--muted); }
+.match .mrow { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.1rem 0; }
+.match .mrow.win { font-weight: 700; color: var(--primary); }
+.match .mrow .sc { font-variant-numeric: tabular-nums; min-width: 1.2em; text-align: right; }
+.match .msets { font-size: 0.75rem; color: var(--muted); }
+.match.done { background: #f4fbf7; }
+.bcol:not(.bout) .match::after { content: ""; position: absolute; right: -0.8rem; top: 50%; width: 0.8rem; border-top: 2px solid var(--line); }
+.bout .bo { display: flex; align-items: baseline; gap: 0.4rem; padding: 0.35rem 0.6rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; flex-wrap: wrap; }
+@media (max-width: 640px) { .bracket { grid-template-columns: 1fr; } .bcol:not(.bout) .match::after { display: none; } }
+/* Turnierbaum in der großen Anzeige */
+.d-bracket .bracket { gap: 1.5vw; font-size: 1.05em; }
+.d-bracket .match { padding: 0.5em 0.8em; border-width: 2px; }
+.d-bracket .match .mt, .d-bracket .bhead, .d-bracket .match .msets { font-size: 0.6em; }
+.d-bracket .bo { padding: 0.5em 0.8em; border-width: 2px; }

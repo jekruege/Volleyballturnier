@@ -633,14 +633,30 @@ function buildView(state) {
     table: tableView(state, groupStandings(state, g.id)),
     games: games.filter((x) => x.phase === 1 && x.group === g.id),
   }));
+  // Wohin führt Platz p einer Runde? (Finalspiel oder Endplatz-Bereich)
+  const nextOf = (roundId, place) => {
+    const fin = fmt.phase3.games.find((g) => [g.team1, g.team2].some((ref) => ref.type === 'roundPlace' && ref.round === roundId && ref.place === place));
+    if (fin) return { kind: 'final', label: fin.name };
+    let pos = 1;
+    for (const tier of fmt.finalRanking) {
+      if (tier.some((e) => e.type === 'roundPlace' && e.round === roundId && e.place === place)) {
+        return { kind: 'place', label: tier.length > 1 ? `Platz ${pos}–${pos + tier.length - 1}` : `Platz ${pos}` };
+      }
+      pos += tier.length;
+    }
+    return null;
+  };
   const rounds = fmt.phase2.rounds.map((r) => ({
     id: r.id, name: r.name, type: r.type, tier: r.tier,
-    seeds: r.seeds.map((s) => ({ ...s, label: `${s.place}. Gruppe ${s.group}`, teamId: resolveRef(state, { type: 'placement', ...s }) })),
+    seeds: r.seeds.map((s) => {
+      const id = resolveRef(state, { type: 'placement', ...s });
+      return { ...s, label: `${s.place}. Gruppe ${s.group}`, teamId: id, teamName: id ? teamName(state, id) : null };
+    }),
     table: r.type === 'roundrobin' ? tableView(state, roundStandings(state, r.id)) : null,
     games: games.filter((x) => x.phase === 2 && x.round === r.id),
     placements: [1, 2, 3, 4].slice(0, r.type === 'roundrobin' ? 3 : 4).map((p) => {
       const id = resolveRef(state, { type: 'roundPlace', round: r.id, place: p });
-      return { place: p, teamId: id, teamName: id ? teamName(state, id) : null };
+      return { place: p, teamId: id, teamName: id ? teamName(state, id) : null, next: nextOf(r.id, p) };
     }),
   }));
   const refCounts = {};
