@@ -182,7 +182,7 @@ table.d-table td.team { font-weight: 700; white-space: normal; }
 table.d-table tr.q td { background: #eaf6ef; }
 table.d-table td.num { font-variant-numeric: tabular-nums; }
 table.d-table .pos { width: 1.6em; font-weight: 700; }
-.d-plan { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 0.92em; }
+.d-plan { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 0.85em; }
 .d-plan th { background: #eef1f4; padding: 0.3em; font-size: 0.95em; }
 .d-plan td { border-bottom: 2px solid #e3e7eb; padding: 0.35em 0.5em; vertical-align: top; }
 .d-plan td.time { font-weight: 700; white-space: nowrap; width: 8.5em; font-variant-numeric: tabular-nums; }
@@ -190,7 +190,8 @@ table.d-table .pos { width: 1.6em; font-weight: 700; }
 .d-plan tr.now td.time::after { content: "jetzt"; display: block; font-size: 0.6em; color: #7a5a00; text-transform: uppercase; letter-spacing: 0.05em; }
 .d-plan .g-title { font-size: 0.7em; color: #555; }
 .d-plan .g-team { font-weight: 700; display: flex; justify-content: space-between; gap: 0.5em; }
-.d-plan .g-team span:first-child { overflow-wrap: anywhere; min-width: 0; }
+.d-plan .g-team span:first-child { overflow-wrap: break-word; hyphens: auto; min-width: 0; flex: 1; }
+.d-plan .g-team .sc { flex: 0 0 auto; white-space: nowrap; font-size: 0.8em; align-self: center; }
 .d-plan .g-team .sc { font-weight: 600; color: #333; font-variant-numeric: tabular-nums; }
 .d-plan .g-team.win { color: var(--primary); }
 .d-plan .g-ref { font-size: 0.65em; color: #555; }
