@@ -171,3 +171,20 @@ test('Manueller Schiri bleibt erhalten, spielendes Team abgelehnt', () => {
   T.setReferee(s, g.id, 'orga');
   assert.equal(g.refereeId, 'orga');
 });
+
+test('Zeitplan: Pausen, Verschiebungen und individuelle Dauer verschieben die Zeiten', () => {
+  const s = make15();
+  assert.equal(T.slotTime(s.tournament, 3).start, '12:00');
+  T.setSchedule(s, { breaks: [{ afterSlot: 2, minutes: 45, label: 'Mittagspause' }, { afterSlot: 4, minutes: -10, label: '' }], slotDurations: { 5: 40 } });
+  assert.equal(T.slotTime(s.tournament, 2).breaks[0].visible, true);
+  assert.equal(T.slotTime(s.tournament, 3).start, '12:45');
+  assert.equal(T.slotTime(s.tournament, 5).start, '13:35'); // 12:45 + 30 + 30 − 10
+  assert.equal(T.slotTime(s.tournament, 5).end, '14:15');
+  assert.equal(T.slotTime(s.tournament, 6).start, '14:15');
+  const view = T.buildView(s);
+  assert.equal(view.slots[1].breaks.length, 1);
+  assert.equal(view.slots[3].breaks[0].visible, false);
+  assert.throws(() => T.setSchedule(s, { breaks: [{ afterSlot: 99, minutes: 10, label: 'x' }] }), /Ungültiges Zeitfenster/);
+  assert.throws(() => T.setSchedule(s, { breaks: [{ afterSlot: 1, minutes: -5, label: 'Pause' }] }), /nicht negativ/);
+  assert.throws(() => T.setSchedule(s, { slotDurations: { 1: 2 } }), /mindestens 5/);
+});

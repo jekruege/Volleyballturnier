@@ -1,7 +1,7 @@
 // Öffentliche Live-Ansicht: Spielplan, Tabellen, Endplatzierung. Aktualisiert sich automatisch.
 import * as T from '../engine/tournament.js';
 import { api } from './api.js';
-import { esc, gameCard, standingsTable, setTitle } from './render.js';
+import { esc, gameCard, standingsTable, setTitle, breakCards } from './render.js';
 
 const app = document.getElementById('app');
 let view = null;
@@ -50,7 +50,7 @@ function renderPlan() {
     if (fieldFilter !== 'all') games = games.filter((g) => String(g.field) === String(fieldFilter));
     if (teamFilter) games = games.filter((g) => g.team1Id === teamFilter || g.team2Id === teamFilter || g.refereeId === teamFilter);
     if (!games.length) continue;
-    html += `<div class="slot ${isNow(s) ? 'now' : ''}"><div class="slothead">${esc(s.time)}</div><div class="slotgames">${games.map((g) => gameCard(view, g)).join('')}</div></div>`;
+    html += `<div class="slot ${isNow(s) ? 'now' : ''}"><div class="slothead">${esc(s.time)}</div><div class="slotgames">${games.map((g) => gameCard(view, g)).join('')}</div></div>${fieldFilter === 'all' && !teamFilter ? breakCards(s) : ''}`;
   }
   if (narrow() && showPast) html += '<p class="pastbar"><button class="link" id="hidePast">Gespielte Zeitfenster ausblenden</button></p>';
   html += '<p class="legend">Farbcode: Gruppen (blau/rosa/grün), Gold (gelb), Silber (grau), Bronze (braun), Finale (grün).</p>';

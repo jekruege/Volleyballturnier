@@ -249,6 +249,30 @@ function renderTables() {
   return html;
 }
 
+// ---------------------------------------------------------------- Zeitplan (Pausen, Verschiebungen, Dauer)
+function renderSchedule() {
+  const t = view.tournament;
+  const breaks = state.tournament.breaks || [];
+  const durations = state.tournament.slotDurations || {};
+  const last = view.slots[view.slots.length - 1];
+  const rows = view.slots.map((s) => {
+    const br = breaks.find((b) => Number(b.afterSlot) === s.slot) || { minutes: '', label: '' };
+    const games = s.games.map((g) => g.phase === 1 ? `${g.group}${g.sublabel.replace('Spiel ', '')}` : g.title).join(', ');
+    return `<tr><td>${s.slot}</td><td class="narrow">${esc(s.time)}</td><td class="wrap muted small">${esc(games)}</td>
+      <td><input type="number" min="5" max="180" data-dur="${s.slot}" value="${durations[s.slot] || ''}" placeholder="${t.slotMinutes}"></td>
+      <td><input type="number" min="-180" max="600" data-brmin="${s.slot}" value="${br.minutes}" placeholder="0"> Min.</td>
+      <td><input type="text" data-brlabel="${s.slot}" value="${esc(br.label)}" placeholder="z. B. Mittagspause"></td></tr>`;
+  }).join('');
+  return `<div class="card"><h2>Zeitplan</h2>
+    <form class="stack" id="schedule">
+    <div class="inline"><label>Start <input type="time" name="startTime" value="${esc(t.startTime)}" style="width:auto"></label>
+      <label>Standarddauer je Spiel <input type="number" name="slotMinutes" value="${t.slotMinutes}" min="5" max="180" style="width:5rem"> Min.</label>
+      <span class="muted">Ende ca. <strong>${esc(last.end)}</strong></span></div>
+    <p class="muted small">Je Zeitfenster kannst du eine abweichende Dauer setzen (leer = Standard) und <strong>danach</strong> eine Pause einfügen. Pause <em>mit</em> Namen erscheint in Spielplan, Anzeige und Druck (z. B. „Mittagspause“). Pause <em>ohne</em> Namen verschiebt nur die Zeiten, z. B. 15 bei Verspätung oder −10, um Zeit aufzuholen. Alle folgenden Zeitfenster rücken automatisch.</p>
+    <div class="tablewrap"><table class="admin schedule"><thead><tr><th>Nr.</th><th>Zeit</th><th>Spiele</th><th>Dauer</th><th>Pause danach</th><th>Bezeichnung der Pause</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p><button class="btn primary">Zeitplan speichern</button></p></form></div>`;
+}
+
 // ---------------------------------------------------------------- Teams / Einstellungen
 function renderSettings() {
   const t = view.tournament;
@@ -273,11 +297,12 @@ function renderSettings() {
 function render() {
   if (!pin) return renderLogin();
   if (!view) return renderSetup();
-  const tabs = [['status', 'Status & Phasen'], ['games', 'Spiele & Ergebnisse'], ['tables', 'Tabellen'], ['settings', 'Teams & Einstellungen']];
+  const tabs = [['status', 'Status & Phasen'], ['games', 'Spiele & Ergebnisse'], ['tables', 'Tabellen'], ['schedule', 'Zeitplan'], ['settings', 'Teams & Einstellungen']];
   let html = `<div class="tabs">${tabs.map(([id, label]) => `<button data-tab="${id}" class="${section === id ? 'active' : ''}">${label}</button>`).join('')}<button class="link" data-act="logout" style="margin-left:auto">Abmelden</button></div>`;
   if (section === 'status') html += renderStatus();
   else if (section === 'games') html += renderGames();
   else if (section === 'tables') html += renderTables();
+  else if (section === 'schedule') html += renderSchedule();
   else html += renderSettings();
   app.innerHTML = html;
   bind();
@@ -349,6 +374,18 @@ function bind() {
       if (b.slotMinutes >= 5) s.tournament.slotMinutes = b.slotMinutes;
       s.tournament.fields.forEach((f, i) => { if (b.fieldNames[i]) f.name = String(b.fieldNames[i]).trim(); });
     }, 'Gespeichert.');
+  });
+  const schedule = document.getElementById('schedule');
+  if (schedule) schedule.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(schedule);
+    const breaks = []; const slotDurations = {};
+    app.querySelectorAll('[data-dur]').forEach((i) => { if (i.value) slotDurations[i.dataset.dur] = Number(i.value); });
+    app.querySelectorAll('[data-brmin]').forEach((i) => {
+      const minutes = Number(i.value); const label = app.querySelector(`[data-brlabel="${i.dataset.brmin}"]`).value.trim();
+      if (i.value && minutes !== 0) breaks.push({ afterSlot: Number(i.dataset.brmin), minutes, label });
+    });
+    mutate((s) => { T.setSchedule(s, { startTime: fd.get('startTime'), slotMinutes: Number(fd.get('slotMinutes')), breaks, slotDurations }); }, 'Zeitplan gespeichert.');
   });
   const pinchange = document.getElementById('pinchange');
   if (pinchange) pinchange.addEventListener('submit', async (e) => {

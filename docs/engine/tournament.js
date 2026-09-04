@@ -16,12 +16,81 @@ function token(len = 10) {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-function slotTime(tournament, slot) {
+const fmtMin = (t) => `${pad(Math.floor(((t % 1440) + 1440) % 1440 / 60))}:${pad(((t % 60) + 60) % 60)}`;
+
+/** Dauer eines Zeitfensters (Standard oder individuell gesetzt). */
+function slotDuration(tournament, slot) {
+  const d = tournament.slotDurations && tournament.slotDurations[slot];
+  return Number(d) > 0 ? Number(d) : tournament.slotMinutes;
+}
+
+/** Pausen/Verschiebungen nach einem Zeitfenster: [{ afterSlot, minutes, label }]. */
+function breaksAfter(tournament, slot) {
+  return (tournament.breaks || []).filter((b) => Number(b.afterSlot) === slot);
+}
+
+function slotStartMinutes(tournament, slot) {
   const [h, m] = (tournament.startTime || '11:00').split(':').map(Number);
-  const start = h * 60 + m + (slot - 1) * tournament.slotMinutes;
-  const end = start + tournament.slotMinutes;
-  const f = (t) => `${pad(Math.floor(t / 60) % 24)}:${pad(t % 60)}`;
-  return { start: f(start), end: f(end), label: `${f(start)} – ${f(end)}` };
+  let t = h * 60 + m;
+  for (let s = 1; s < slot; s += 1) {
+    t += slotDuration(tournament, s);
+    for (const b of breaksAfter(tournament, s)) t += Number(b.minutes) || 0;
+  }
+  return t;
+}
+
+/** Zeitfenster mit Start/Ende sowie den Pausen danach (nur benannte Pausen werden angezeigt). */
+function slotTime(tournament, slot) {
+  const start = slotStartMinutes(tournament, slot);
+  const duration = slotDuration(tournament, slot);
+  const end = start + duration;
+  let cursor = end;
+  const breaks = breaksAfter(tournament, slot).map((b) => {
+    const minutes = Number(b.minutes) || 0;
+    const item = { afterSlot: slot, minutes, label: b.label || '', start: fmtMin(cursor), end: fmtMin(cursor + Math.max(0, minutes)), visible: !!b.label && minutes > 0 };
+    cursor += minutes;
+    return item;
+  });
+  return { start: fmtMin(start), end: fmtMin(end), label: `${fmtMin(start)} – ${fmtMin(end)}`, duration, breaks };
+}
+
+/** Pausen/Verschiebungen und individuelle Dauern setzen (Turnierleitung). */
+function setSchedule(state, { breaks, slotDurations, startTime, slotMinutes }) {
+  const t = state.tournament;
+  const maxSlot = Math.max(...state.games.map((g) => g.slot));
+  if (startTime !== undefined) {
+    if (!/^\d{1,2}:\d{2}$/.test(startTime)) throw new Error('Startzeit im Format HH:MM angeben.');
+    t.startTime = startTime;
+  }
+  if (slotMinutes !== undefined) {
+    if (!(Number(slotMinutes) >= 5)) throw new Error('Die Spieldauer muss mindestens 5 Minuten betragen.');
+    t.slotMinutes = Number(slotMinutes);
+  }
+  if (breaks !== undefined) {
+    const list = [];
+    for (const b of breaks || []) {
+      const afterSlot = Number(b.afterSlot); const minutes = Number(b.minutes);
+      if (!Number.isInteger(afterSlot) || afterSlot < 1 || afterSlot > maxSlot) throw new Error(`Ungültiges Zeitfenster für eine Pause: ${b.afterSlot}`);
+      if (!Number.isInteger(minutes) || minutes === 0 || Math.abs(minutes) > 600) throw new Error('Pausenlänge in ganzen Minuten angeben (ungleich 0).');
+      const label = String(b.label || '').trim();
+      if (label && minutes < 0) throw new Error('Eine benannte Pause kann nicht negativ sein. Für Verkürzungen den Namen leer lassen.');
+      list.push({ afterSlot, minutes, label });
+    }
+    list.sort((a, b) => a.afterSlot - b.afterSlot);
+    t.breaks = list;
+  }
+  if (slotDurations !== undefined) {
+    const out = {};
+    for (const [k, v] of Object.entries(slotDurations || {})) {
+      const slot = Number(k); const min = Number(v);
+      if (!Number.isInteger(slot) || slot < 1 || slot > maxSlot) continue;
+      if (!v || min === t.slotMinutes) continue;
+      if (!(min >= 5)) throw new Error(`Zeitfenster ${slot}: Dauer muss mindestens 5 Minuten betragen.`);
+      out[slot] = min;
+    }
+    t.slotDurations = out;
+  }
+  logEvent(state, 'schedule_changed', {});
 }
 
 // ---------------------------------------------------------------------------
@@ -554,9 +623,10 @@ function tableView(state, rows) {
 function buildView(state) {
   const fmt = getFormat(state.tournament.formatId);
   const games = state.games.map((g) => gameView(state, g)).sort((a, b) => a.slot - b.slot || a.field - b.field);
-  const slots = [...new Set(games.map((g) => g.slot))].sort((a, b) => a - b).map((s) => ({
-    slot: s, time: slotTime(state.tournament, s).label, games: games.filter((g) => g.slot === s),
-  }));
+  const slots = [...new Set(games.map((g) => g.slot))].sort((a, b) => a - b).map((s) => {
+    const st = slotTime(state.tournament, s);
+    return { slot: s, time: st.label, start: st.start, end: st.end, duration: st.duration, breaks: st.breaks, games: games.filter((g) => g.slot === s) };
+  });
   const groups = fmt.groups.map((g) => ({
     id: g.id, name: g.name,
     teams: state.teams.filter((t) => t.group === g.id).map((t) => ({ id: t.id, name: t.name, club: t.club, pos: t.pos })),
@@ -597,7 +667,7 @@ function buildView(state) {
 export {
   createTournament, refresh, buildView, gameView, setResult, clearResult, setReferee, resetReferees,
   confirmPhase1, reopenPhase1, confirmPhase2, reopenPhase2, proposePlacements, phaseComplete,
-  groupStandings, roundStandings, finalRanking, teamName, slotTime, gameById, resolveRef, refLabel, token,
+  groupStandings, roundStandings, finalRanking, teamName, slotTime, slotDuration, setSchedule, gameById, resolveRef, refLabel, token,
 };
 
 // ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // Parameter: ?s=12 (Sekunden je Seite), ?plan=4 (Zeitfenster im Spielplan)
 import * as T from '../engine/tournament.js';
 import { api } from './api.js';
-import { esc } from './render.js';
+import { esc, breakRows } from './render.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -68,7 +68,7 @@ function renderPlan() {
         <div class="g-team ${r && r.winner === 2 ? 'win' : ''} ${g.team2Known ? '' : 'unknown'}"><span>${esc(g.team2)}</span><span class="sc">${r ? sc(1) : ''}</span></div>
         <div class="g-ref">Schiri: ${esc(g.referee || '–')}</div></td>`;
     }).join('');
-    return `<tr class="${isNow ? 'now' : ''}"><td class="time">${esc(s.time)}</td>${cells}</tr>`;
+    return `<tr class="${isNow ? 'now' : ''}"><td class="time">${esc(s.time)}</td>${cells}</tr>${breakRows(s, fields.length).replace(/<th>/g, '<td class="time">').replace(/<\/th>/g, '</td>')}`;
   }).join('');
   return `<table class="d-plan"><thead><tr><th>Zeit</th>${fields.map((f) => `<th>${esc(f.name)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
 }

@@ -232,3 +232,11 @@ table.d-table .pos { width: 1.6em; font-weight: 700; }
   .legend { font-size: 0.72rem; }
   .ranking ol { padding-left: 1.4rem; }
 }
+
+/* Pausen */
+tr.break th, tr.break td { background: #fff3c4 !important; font-weight: 600; text-align: left; }
+.slot.break .breakcard { background: #fff3c4; border: 1px solid #f0d78c; border-radius: 10px; padding: 0.5rem 0.8rem; font-weight: 600; }
+.gamelist .game.pause { background: #fff3c4; border-color: #f0d78c; }
+.d-plan tr.break td { background: #fff3c4; font-weight: 700; }
+table.admin.schedule input[type=number] { width: 4.5rem; }
+table.admin.schedule input[type=text] { min-width: 9rem; }

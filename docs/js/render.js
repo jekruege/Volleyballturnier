@@ -12,6 +12,14 @@ export function baseUrl() {
 export function gameLink(token) { return `${baseUrl()}g.html?t=${encodeURIComponent(token)}`; }
 export function fieldLink(token) { return `${baseUrl()}f.html?t=${encodeURIComponent(token)}`; }
 
+/** Pausen-Zeilen (benannte Pausen) nach einem Zeitfenster – für Listen und Tabellen. */
+export function breakRows(slot, colspan) {
+  return (slot.breaks || []).filter((b) => b.visible).map((b) => `<tr class="break"><th>${esc(b.start)} – ${esc(b.end)}</th><td colspan="${colspan}">${esc(b.label)} (${b.minutes} Min.)</td></tr>`).join('');
+}
+export function breakCards(slot) {
+  return (slot.breaks || []).filter((b) => b.visible).map((b) => `<div class="slot break"><div class="slothead">${esc(b.start)} – ${esc(b.end)}</div><div class="breakcard">☕ ${esc(b.label)} (${b.minutes} Min.)</div></div>`).join('');
+}
+
 export function tierOf(view, g) {
   if (g.phase === 1) return `group-${g.group}`;
   if (g.phase === 3) return 'final';
@@ -65,6 +73,7 @@ export function setTitle(view, suffix) {
 export function fieldPage(view, field) {
   const games = view.games.filter((g) => g.field === field.number);
   const next = games.find((g) => g.status === 'ready');
+  const breakAfter = (g) => { const s = view.slots.find((x) => x.slot === g.slot); return s ? (s.breaks || []).filter((b) => b.visible).map((b) => `<li class="game pause"><div class="time">${esc(b.start)} – ${esc(b.end)}</div><div class="main"><div class="title">☕ ${esc(b.label)}</div></div></li>`).join('') : ''; };
   const rows = games.map((g) => {
     const cls = g === next ? 'next' : g.status;
     const link = g.status === 'pending' || !g.token ? esc(g.title) : `<a href="g.html?t=${encodeURIComponent(g.token)}">${esc(g.title)}</a>`;
@@ -74,7 +83,7 @@ export function fieldPage(view, field) {
       <div class="teams">${esc(g.team1)} <span class="vs">vs</span> ${esc(g.team2)}</div>
       <div class="meta">Schiri: ${esc(g.referee || '–')} · ${resultBadge(g)}</div></div>
       ${g.status === 'ready' && g.token ? `<a class="btn" href="g.html?t=${encodeURIComponent(g.token)}">Ergebnis</a>` : ''}
-    </li>`;
+    </li>${breakAfter(g)}`;
   }).join('');
   return `<h1>${esc(field.name)}</h1>
 <p class="muted">Tippe auf ein Spiel, um das Ergebnis einzutragen. Das nächste offene Spiel ist markiert.</p>
@@ -164,7 +173,7 @@ export async function fieldSheetPage(view, field) {
   const rows = await Promise.all(games.map(async (g) => `<tr>
     <td>${esc(g.time)}</td><td>${esc(g.title)}</td><td>${esc(g.team1)}</td><td>${esc(g.team2)}</td><td>${esc(g.referee || '')}</td>
     <td class="fill"></td><td class="fill"></td><td class="fill"></td>
-    <td class="qrcell">${g.token ? await qrSvg(gameLink(g.token)) : ''}</td></tr>`));
+    <td class="qrcell">${g.token ? await qrSvg(gameLink(g.token)) : ''}</td></tr>${breakRows(view.slots.find((s) => s.slot === g.slot) || {}, 8)}`));
   return `<h1 class="printtitle">${esc(view.tournament.name)} – ${esc(field.name)}</h1>
 <p class="muted">${esc(view.tournament.date || '')} · Schiri-Team scannt den QR-Code des Spiels und trägt das Ergebnis ein. Zur Sicherheit hier zusätzlich handschriftlich notieren.</p>
 <table class="sheet"><thead><tr><th>Zeit</th><th>Spiel</th><th>Team 1</th><th>Team 2</th><th>Schiri</th><th>Satz 1</th><th>Satz 2</th><th>Satz 3</th><th>QR</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
@@ -178,7 +187,7 @@ export function planPage(view) {
       if (!g) return '<td class="empty">–</td>';
       return `<td class="tier-${tierOf(view, g)}"><div class="title">${esc(g.title)}</div><div>${esc(g.team1)}</div><div>${esc(g.team2)}</div><div class="ref">Schiri: ${esc(g.referee || '–')}</div>${g.status === 'done' ? `<div class="res">${esc(g.setsText)}</div>` : ''}</td>`;
     }).join('');
-    return `<tr><th>${esc(s.time)}</th>${cells}</tr>`;
+    return `<tr><th>${esc(s.time)}</th>${cells}</tr>${breakRows(s, fields.length)}`;
   }).join('');
   return `<h1 class="printtitle">${esc(view.tournament.name)} – Spielplan</h1>
 <p class="muted">${esc(view.tournament.date || '')} · Start ${esc(view.tournament.startTime)} · ${view.tournament.slotMinutes} Min. je Spiel · ${view.games.length} Spiele</p>

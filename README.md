@@ -111,6 +111,14 @@ Danach Turnier anlegen, Teams eintragen, Spielplan prüfen, QR-Codes und Spielze
 Die Schiri-Handys brauchen nur Internet (Mobilfunk reicht). Die Turnierleitung kann parallel am
 Laptop oder Handy arbeiten; gleichzeitige Änderungen werden erkannt und automatisch zusammengeführt.
 
+## Zeitplan: Pausen und Verschiebungen
+
+Im Admin-Bereich unter **Zeitplan** lassen sich Startzeit und Standarddauer ändern, für einzelne
+Zeitfenster eine abweichende Dauer setzen (z. B. 40 Minuten für das Finale) und nach jedem
+Zeitfenster eine Pause einfügen. Eine Pause **mit Namen** (z. B. „Mittagspause“) erscheint in
+Spielplan, Anzeige und Druck; eine Pause **ohne Namen** verschiebt nur die Zeiten, z. B. `15` bei
+Verspätung oder `-10`, um Zeit aufzuholen. Alle folgenden Zeitfenster rücken automatisch nach.
+
 ## Große Anzeige (iPad / Beamer)
 
 `display.html` zeigt Spielplan (aktuelles und die nächsten Zeitfenster) und alle Tabellen in
