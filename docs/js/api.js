@@ -24,6 +24,9 @@ async function rpc(fn, params = {}) {
   const text = await res.text();
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
   if (!res.ok) {
+    if (!usingSupabase && (res.status === 405 || res.status === 404) && /github\.io$/.test(location.hostname)) {
+      throw new ApiError('Keine Datenbank konfiguriert: Bitte Supabase-URL und Publishable Key in docs/config.js eintragen (siehe README, Schritt 2).', 'NO_CONFIG');
+    }
     const msg = (data && (data.message || data.error)) || `Fehler ${res.status}`;
     throw new ApiError(msg, data && data.code);
   }
