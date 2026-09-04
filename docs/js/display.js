@@ -2,7 +2,7 @@
 // Parameter: ?s=12 (Sekunden je Seite), ?plan=4 (Zeitfenster im Spielplan)
 import * as T from '../engine/tournament.js';
 import { api } from './api.js';
-import { esc, breakRows, koBracket } from './render.js';
+import { esc, breakRows, koBracket, advancementTable, roundOutlook } from './render.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -38,9 +38,10 @@ function buildScreens() {
   screens = [];
   screens.push({ title: 'Spielplan', render: renderPlan });
   for (const g of view.groups) screens.push({ title: g.name, render: () => renderTable(g.table, g.games) });
+  screens.push({ title: 'Weiterkommen aus den Gruppen', render: () => `<div class="d-advance" style="--cols:${view.groups.length}">${advancementTable(view)}</div>` });
   if (view.phase >= 2) {
     for (const r of view.rounds) {
-      if (r.table) screens.push({ title: r.name, render: () => renderTable(r.table, r.games) });
+      if (r.table) screens.push({ title: r.name, render: () => renderTable(r.table, r.games) + `<div class="d-outlook">${roundOutlook(r)}</div>` });
       else screens.push({ title: r.name, render: () => renderKo(r) });
     }
   }

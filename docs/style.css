@@ -252,6 +252,7 @@ section.round h3 { margin-top: 0.2rem; }
 .outlook .pl, .bo .pl { font-weight: 700; margin-right: 0.2rem; }
 .outlook .nx, .bo .nx { color: var(--muted); }
 .outlook .sep { color: var(--line); }
+.outlook .oi { white-space: nowrap; }
 .bracket { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; align-items: stretch; }
 .bcol { display: flex; flex-direction: column; gap: 0.6rem; justify-content: space-around; }
 .bhead { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
@@ -270,3 +271,15 @@ section.round h3 { margin-top: 0.2rem; }
 .d-bracket .match { padding: 0.5em 0.8em; border-width: 2px; }
 .d-bracket .match .mt, .d-bracket .bhead, .d-bracket .match .msets { font-size: 0.6em; }
 .d-bracket .bo { padding: 0.5em 0.8em; border-width: 2px; }
+
+/* Weiterkommen / Ausblick in der großen Anzeige */
+.d-advance .grid2 { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 1.2vw; }
+.d-advance table.standings { font-size: 0.85em; table-layout: auto; }
+.d-advance table.standings th, .d-advance table.standings td { padding: 0.22em 0.45em; border-bottom: 2px solid #e3e7eb; }
+.d-advance table.standings td.left:nth-child(2) { white-space: normal; overflow-wrap: normal; hyphens: auto; }
+.d-advance table.standings td:last-child { white-space: normal; }
+.d-advance[style*="--cols:3"] table.standings, .d-advance[style*="--cols:4"] table.standings { font-size: 0.72em; }
+.d-advance table.standings td.left:nth-child(2) { font-weight: 700; }
+.d-advance .legend { font-size: 0.7em; margin-top: 0.6em; }
+.d-outlook .outlook { font-size: 1.1em; margin-top: 0.8em; display: flex; flex-wrap: wrap; gap: 0.3em 1em; }
+.d-outlook .outlook .sep { display: none; }

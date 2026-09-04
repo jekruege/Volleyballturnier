@@ -113,7 +113,7 @@ export function koBracket(view, round) {
 
 /** Zeile unter einer Dreier-Runde: 1. → Finale, 2. → Kleines Finale, 3. → Platz 5–6 */
 export function roundOutlook(round) {
-  return `<p class="outlook">${round.placements.map((p) => `<span class="pl">${p.place}.</span> ${p.teamName ? `<strong>${esc(p.teamName)}</strong>` : '<span class="muted">offen</span>'} <span class="nx">→ ${esc(p.next ? p.next.label : '')}</span>`).join('<span class="sep"> · </span>')}</p>`;
+  return `<p class="outlook">${round.placements.map((p) => `<span class="oi"><span class="pl">${p.place}.</span> ${p.teamName ? `<strong>${esc(p.teamName)}</strong>` : '<span class="muted">offen</span>'} <span class="nx">→ ${esc(p.next ? p.next.label : '')}</span></span>`).join('<span class="sep"> · </span>')}</p>`;
 }
 
 /** Kompletter Abschnitt "2. Phase" (Übersicht, Admin, Druck). */
