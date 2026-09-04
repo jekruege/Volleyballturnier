@@ -88,6 +88,7 @@ Danach Turnier anlegen, Teams eintragen, Spielplan prüfen, QR-Codes und Spielze
 | --- | --- |
 | `index.html` | Live-Übersicht (öffentlich) |
 | `admin.html` | Turnierleitung (PIN) |
+| `display.html` | Große Anzeige für iPad/Beamer, schaltet automatisch durch (siehe unten) |
 | `print.html?type=qr` | QR-Codes der Felder zum Ausdrucken |
 | `print.html?type=feld&n=1` | Spielzettel Feld 1 (ebenso `n=2`, `n=3`) |
 | `print.html?type=plan` | Gesamtspielplan |
@@ -110,6 +111,17 @@ Danach Turnier anlegen, Teams eintragen, Spielplan prüfen, QR-Codes und Spielze
 Die Schiri-Handys brauchen nur Internet (Mobilfunk reicht). Die Turnierleitung kann parallel am
 Laptop oder Handy arbeiten; gleichzeitige Änderungen werden erkannt und automatisch zusammengeführt.
 
+## Große Anzeige (iPad / Beamer)
+
+`display.html` zeigt Spielplan (aktuelles und die nächsten Zeitfenster) und alle Tabellen in
+großer Schrift und schaltet automatisch alle 12 Sekunden weiter. Bedienung: rechts tippen = weiter,
+links = zurück, Mitte = Pause; Tastatur: Pfeiltasten, `p` (Pause), `f` (Vollbild).
+Parameter: `display.html?s=20` (Sekunden je Seite), `?plan=5` (Zeitfenster im Spielplan).
+
+Auf dem iPad in Safari öffnen, dann **Teilen → Zum Home-Bildschirm**. Von dort gestartet läuft die
+Anzeige ohne Browserleisten im Vollbild. Damit das Display nicht abschaltet: Einstellungen →
+Anzeige & Helligkeit → Automatische Sperre → Nie.
+
 ## Alternative: lokal im WLAN (ohne Internet)
 
 Voraussetzung: [Node.js](https://nodejs.org) ab Version 20. `docs/config.js` bleibt leer.
@@ -120,6 +132,8 @@ ADMIN_PIN=geheim npm start
 ```
 
 Übersicht auf `http://localhost:3000/`, Turnierleitung unter `http://localhost:3000/admin.html`.
+Der lokale Server ignoriert die Supabase-Werte in `docs/config.js` (mit `SUPABASE_CONFIG=1` nutzt
+er sie stattdessen).
 Damit die Schiri-Handys die QR-Links erreichen, müssen sie im selben WLAN sein; die Druckseiten
 über die IP-Adresse des Rechners aufrufen (z. B. `http://192.168.0.23:3000/print.html?type=qr`),
 dann enthalten die QR-Codes diese Adresse. Die Daten liegen in `data/turnier.json`.

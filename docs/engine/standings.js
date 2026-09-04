@@ -62,7 +62,7 @@ function computeStandings(teamIds, games, nameOf = (id) => id) {
       // Markieren, wenn auch der direkte Vergleich keine Entscheidung bringt
       for (let k = 0; k < tied.length - 1; k += 1) {
         const ha = h2hRows.get(tied[k].teamId); const hb = h2hRows.get(tied[k + 1].teamId);
-        if (cmpBasic(ha, hb) === 0 && tied[k].pointsFor === tied[k + 1].pointsFor) {
+        if (cmpBasic(ha, hb) === 0 && tied[k].pointsFor === tied[k + 1].pointsFor && tied[k].played > 0) {
           tied[k].tie = true; tied[k + 1].tie = true;
         }
       }

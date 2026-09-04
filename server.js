@@ -18,6 +18,11 @@ export function createApp({ store, adminPin = ADMIN_PIN } = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '5mb' }));
+  // Im lokalen Modus spricht die App mit diesem Server – auch wenn in docs/config.js
+  // Supabase-Werte stehen (abschaltbar mit SUPABASE_CONFIG=1).
+  if (process.env.SUPABASE_CONFIG !== '1') {
+    app.get('/config.js', (req, res) => res.type('js').send('window.VT_CONFIG = { supabaseUrl: "", supabaseKey: "" };\n'));
+  }
   app.use(express.static(path.join(__dirname, 'docs')));
 
   const requirePin = (pin) => { if (typeof pin !== 'string' || !pin || pin !== adminPin) throw new RpcError('Falsche PIN.'); };

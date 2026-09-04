@@ -172,7 +172,9 @@ function renderStatus() {
     <p class="inline"><a class="btn" href="print.html?type=qr" target="_blank">QR-Codes der Felder</a>
     ${t.fields.map((f) => `<a class="btn" href="print.html?type=feld&n=${f.number}" target="_blank">Spielzettel ${esc(f.name)}</a>`).join(' ')}
     <a class="btn" href="print.html?type=plan" target="_blank">Spielplan</a> <a class="btn" href="print.html?type=tabellen" target="_blank">Tabellen</a></p>
-    <p class="muted small">Die QR-Codes verweisen auf diese Web-Adresse. Die Schiri-Teams brauchen nur Internet auf dem Handy.</p></div>`;
+    <p class="muted small">Die QR-Codes verweisen auf diese Web-Adresse. Die Schiri-Teams brauchen nur Internet auf dem Handy.</p>
+    <h3>Große Anzeige (iPad / Beamer)</h3>
+    <p class="inline"><a class="btn" href="display.html" target="_blank">Anzeige öffnen</a> <span class="muted small">Schaltet automatisch zwischen Spielplan und Tabellen durch (alle 12 s; anpassbar über <code>display.html?s=20</code>). Tippen rechts/links = weiter/zurück, Mitte = Pause. Auf dem iPad über „Teilen → Zum Home-Bildschirm“ als Vollbild-App starten.</span></p></div>`;
 }
 
 function renderPlacements(phase) {
