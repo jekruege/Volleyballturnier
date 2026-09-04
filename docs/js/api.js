@@ -12,11 +12,11 @@ async function rpc(fn, params = {}) {
   let res;
   if (usingSupabase) {
     const url = `${cfg.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${fn}`;
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: cfg.supabaseKey, Authorization: `Bearer ${cfg.supabaseKey}` },
-      body: JSON.stringify(params),
-    });
+    // Neue Supabase-Keys (sb_publishable_…) werden nur im apikey-Header gesendet,
+    // alte anon-Keys (JWT, beginnen mit eyJ…) zusätzlich als Bearer-Token.
+    const headers = { 'Content-Type': 'application/json', apikey: cfg.supabaseKey };
+    if (cfg.supabaseKey.startsWith('eyJ')) headers.Authorization = `Bearer ${cfg.supabaseKey}`;
+    res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(params) });
   } else {
     res = await fetch(`./rpc/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
   }

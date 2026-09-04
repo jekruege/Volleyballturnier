@@ -47,8 +47,12 @@ kostenlosen **Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Nod
 2. Links im Menü **SQL Editor** öffnen, den kompletten Inhalt der Datei
    [`supabase/schema.sql`](supabase/schema.sql) einfügen und mit **Run** ausführen.
    Das legt die Tabellen und die Funktionen an, über die die App mit der Datenbank spricht.
-3. Unter **Project Settings → API** die beiden Werte kopieren: **Project URL** und den
-   **anon public**-Key.
+3. Zwei Werte kopieren:
+   - **Project URL** unter **Project Settings → Data API** (z. B. `https://abcdefghijkl.supabase.co`;
+     die Kennung steht auch in der Browser-Adresse hinter `/project/`).
+   - **Publishable key** unter **Project Settings → API Keys** (beginnt mit `sb_publishable_`).
+     Bei älteren Projekten heißt er **anon public** und beginnt mit `eyJ…`; beides funktioniert.
+     Den **Secret key** niemals verwenden.
 
 ### 2. Zugangsdaten in der App eintragen
 
@@ -58,12 +62,12 @@ das Stift-Symbol bearbeiten und committen):
 ```js
 window.VT_CONFIG = {
   supabaseUrl: 'https://xxxxxxxxxxxx.supabase.co',
-  supabaseKey: 'eyJhbGciOi…',
+  supabaseKey: 'sb_publishable_…',
 };
 ```
 
-Der anon-Key darf öffentlich sein: Er erlaubt nur, was die Funktionen aus `schema.sql` zulassen
-(lesen, Ergebnisse per Token eintragen, Änderungen nur mit PIN).
+Der Publishable/anon-Key darf öffentlich sein: Er erlaubt nur, was die Funktionen aus `schema.sql`
+zulassen (lesen, Ergebnisse per Token eintragen, Änderungen nur mit PIN).
 
 ### 3. GitHub Pages einschalten
 
