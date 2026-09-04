@@ -11,7 +11,7 @@ kostenlosen **Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Nod
 ## Funktionen
 
 - **Zwei Turnierformate** (aus den bisherigen Tabellen übernommen):
-  - **15 Teams**: 3 Gruppen à 5 (Jeder gegen Jeden) → 5 Dreier-Runden (Gold 1/2, Silber 1/2, Bronze) → Finale & Kleines Finale. 47 Spiele, 16 Zeitfenster.
+  - **15 Teams**: 3 Gruppen à 5 (Jeder gegen Jeden) → 5 Dreier-Runden (Gold 1/2, Silber (7–9), Silber (10–12), Bronze) → Finale & Kleines Finale. 47 Spiele, 16 Zeitfenster.
   - **16 Teams**: 2 Gruppen à 8 (4 Spiele je Team) → 4 K.o.-Runden à 4 Teams (2 Halbfinale, Finale, Spiel um Platz 3) → Finale & Kleines Finale. 50 Spiele, 17 Zeitfenster.
 - **Spielplan** mit Zeitfenstern, 3 Feldern und Schiedsrichtern. Die Gruppenphase folgt exakt dem
   Slot-Layout der Vorlagen; die 2./3. Phase wird automatisch so geplant, dass kein Spiel eingeplant
@@ -153,8 +153,8 @@ Mit Docker: `docker compose up -d` (PIN in `docker-compose.yml` anpassen).
 - K.o.-Spiele und Finalspiele brauchen einen Sieger: bei 1:1 entscheidet ein 3. Satz; wird keiner
   eingetragen, zählt die Punktdifferenz beider Sätze; bei gleicher Punktzahl ist der 3. Satz Pflicht.
 - Tabellen: Siege → Satzdifferenz → Punktdifferenz → direkter Vergleich → mehr gewonnene Punkte.
-- Weiterkommen 15 Teams: Gold 1 = 1.A, 1.C, 2.A · Gold 2 = 1.B, 2.B, 2.C · Silber 1 = 3.A, 3.C, 3.B ·
-  Silber 2 = 4.A, 4.B, 4.C · Bronze = 5.A, 5.B, 5.C. Finale 1. Gold 1 vs 1. Gold 2, Kleines Finale
+- Weiterkommen 15 Teams: Gold 1 = 1.A, 1.C, 2.A · Gold 2 = 1.B, 2.B, 2.C · Silber (7–9) = 3.A, 3.C, 3.B ·
+  Silber (10–12) = 4.A, 4.B, 4.C · Bronze = 5.A, 5.B, 5.C. Finale 1. Gold 1 vs 1. Gold 2, Kleines Finale
   die Zweiten.
 - Weiterkommen 16 Teams: Gold 1 = 1.A, 2.B, 3.A, 4.B · Gold 2 = 2.A, 1.B, 4.A, 3.B · Silber = 5./6.
   beider Gruppen · Bronze = 7./8. beider Gruppen. Halbfinale: 1 vs 4 und 2 vs 3 der Runde.

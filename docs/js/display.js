@@ -39,15 +39,9 @@ function buildScreens() {
   screens.push({ title: 'Spielplan', render: renderPlan });
   for (const g of view.groups) screens.push({ title: g.name, render: () => renderTable(g.table, g.games) });
   if (view.phase >= 2) {
-    const rr = view.rounds.filter((r) => r.table);
-    for (let i = 0; i < rr.length; i += 2) {
-      const pair = rr.slice(i, i + 2);
-      screens.push({ title: pair.map((r) => r.name).join(' · '), render: () => `<div class="d-grid2">${pair.map((r) => `<div><div class="d-title">${esc(r.name)}</div>${renderTable(r.table, r.games, true)}</div>`).join('')}</div>` });
-    }
-    const ko = view.rounds.filter((r) => !r.table);
-    for (let i = 0; i < ko.length; i += 2) {
-      const pair = ko.slice(i, i + 2);
-      screens.push({ title: pair.map((r) => r.name).join(' · '), render: () => `<div class="d-grid2">${pair.map((r) => `<div><div class="d-title">${esc(r.name)}</div>${renderKo(r)}</div>`).join('')}</div>` });
+    for (const r of view.rounds) {
+      if (r.table) screens.push({ title: r.name, render: () => renderTable(r.table, r.games) });
+      else screens.push({ title: r.name, render: () => renderKo(r) });
     }
   }
   if (view.phase >= 3) screens.push({ title: 'Finale & Endplatzierung', render: renderRanking });

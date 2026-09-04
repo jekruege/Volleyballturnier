@@ -527,9 +527,11 @@ function gameView(state, g) {
   const field = state.tournament.fields.find((f) => f.number === g.field);
   const team1 = g.team1Id ? teamName(state, g.team1Id) : null;
   const team2 = g.team2Id ? teamName(state, g.team2Id) : null;
+  const rd = g.round ? roundDef(state, g.round) : null;
+  const label = rd ? rd.name : g.label;
   return {
     id: g.id, token: g.token, phase: g.phase, group: g.group, round: g.round, mode: g.mode,
-    label: g.label, sublabel: g.sublabel, title: g.sublabel ? `${g.label} – ${g.sublabel}` : g.label,
+    label, sublabel: g.sublabel, title: g.sublabel ? `${label} – ${g.sublabel}` : label,
     slot: g.slot, time: time.label, start: time.start, end: time.end,
     field: g.field, fieldName: field ? field.name : `Feld ${g.field}`,
     team1Id: g.team1Id || null, team2Id: g.team2Id || null,

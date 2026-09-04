@@ -1,5 +1,5 @@
 // Format: Quattro-Mixed mit 15 Teams (3 Gruppen à 5, Jeder gegen Jeden),
-// danach 5 Dreier-Runden (Gold 1/2, Silber 1/2, Bronze) im Jeder-gegen-Jeden,
+// danach 5 Dreier-Runden (Gold 1/2, Silber (7–9), Silber (10–12), Bronze) im Jeder-gegen-Jeden,
 // abschließend Finale und Kleines Finale. Entspricht der Vorlage "Turnier15Teams".
 
 // Spielplan der 1. Gruppenphase: pro Slot ein Spiel je Gruppe (Feld 1 = Gruppe A,
@@ -38,9 +38,9 @@ export default {
         seeds: [{ group: 'A', place: 1 }, { group: 'C', place: 1 }, { group: 'A', place: 2 }] },
       { id: 'gold2', name: 'Gold-Runde 2', type: 'roundrobin', tier: 'gold',
         seeds: [{ group: 'B', place: 1 }, { group: 'B', place: 2 }, { group: 'C', place: 2 }] },
-      { id: 'silber1', name: 'Silber-Runde 1', type: 'roundrobin', tier: 'silber',
+      { id: 'silber1', name: 'Silber (7–9)', type: 'roundrobin', tier: 'silber',
         seeds: [{ group: 'A', place: 3 }, { group: 'C', place: 3 }, { group: 'B', place: 3 }] },
-      { id: 'silber2', name: 'Silber-Runde 2', type: 'roundrobin', tier: 'silber',
+      { id: 'silber2', name: 'Silber (10–12)', type: 'roundrobin', tier: 'silber',
         seeds: [{ group: 'A', place: 4 }, { group: 'B', place: 4 }, { group: 'C', place: 4 }] },
       { id: 'bronze', name: 'Bronze-Runde', type: 'roundrobin', tier: 'bronze',
         seeds: [{ group: 'A', place: 5 }, { group: 'B', place: 5 }, { group: 'C', place: 5 }] },
