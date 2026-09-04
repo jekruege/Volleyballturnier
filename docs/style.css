@@ -108,7 +108,7 @@ table.admin { width: 100%; border-collapse: collapse; background: var(--card); f
 table.admin th, table.admin td { padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
 table.admin input[type=number] { width: 3.2rem; padding: 0.25rem; text-align: center; border: 1px solid var(--line); border-radius: 6px; }
 table.admin input[type=text] { width: 100%; padding: 0.25rem 0.4rem; border: 1px solid var(--line); border-radius: 6px; }
-table.admin select { max-width: 11rem; }
+table.admin select { max-width: 10rem; }
 table.admin tr.done td { background: #f4fbf7; }
 .teamsetup td input { width: 100%; }
 .placement { list-style: none; padding: 0; }
@@ -145,7 +145,14 @@ table.plan td.tier-group-A { background: var(--group-A); } table.plan td.tier-gr
 @media (max-width: 600px) { .gamelist .game { flex-wrap: wrap; } .gamelist .time { min-width: 0; } h1 { font-size: 1.3rem; } }
 
 /* Feinschliff */
-table.admin td.sets { white-space: nowrap; }
+table.admin td.sets { white-space: normal; width: 15rem; min-width: 15rem; }
+table.admin td.sets .set { white-space: nowrap; }
+table.admin th, table.admin td { white-space: nowrap; }
+table.admin td.wrap, table.admin th.wrap { white-space: normal; }
+table.admin td.sets .set input[type=number] { width: 3rem; }
+table.admin td.actions, table.admin td.narrow, table.admin th.narrow { width: 1%; }
+table.admin select { max-width: 10rem; }
+main.wide { max-width: 1500px; }
 table.admin td.sets .set { display: inline-flex; align-items: center; gap: 0.15rem; margin-right: 0.4rem; }
 table.admin td.actions { white-space: nowrap; }
 table.admin td.actions .btn { margin-right: 0.3rem; }

@@ -220,12 +220,12 @@ function renderGames() {
   </div>
   <p class="muted small">Ergebnisse hier direkt eintragen oder korrigieren (Sätze eingeben, dann „Speichern“). Schiri-Zuteilungen können je Spiel überschrieben werden; „(n)“ = bisherige Einsätze. Die Tabelle lässt sich seitlich scrollen.</p>
   <div class="tablewrap"><table class="admin"><thead><tr><th>Zeit</th><th>Feld</th><th>Spiel</th><th>Team 1</th><th>Team 2</th><th>Sätze</th><th></th><th>Schiri</th><th>QR</th></tr></thead><tbody>
-  ${games.map((g) => `<tr class="${g.status}"><td>${esc(g.time)}</td><td>${esc(g.fieldName)}</td><td>${esc(g.title)}</td>
-    <td class="${g.team1Known ? '' : 'muted'}">${esc(g.team1)}</td><td class="${g.team2Known ? '' : 'muted'}">${esc(g.team2)}</td>
+  ${games.map((g) => `<tr class="${g.status}"><td class="narrow">${esc(g.time)}</td><td class="narrow wrap">${esc(g.fieldName)}</td><td class="narrow wrap">${esc(g.title)}</td>
+    <td class="wrap ${g.team1Known ? '' : 'muted'}">${esc(g.team1)}</td><td class="wrap ${g.team2Known ? '' : 'muted'}">${esc(g.team2)}</td>
     <td class="sets">${setInputs(g)}</td>
-    <td class="actions"><button class="btn small primary" data-save="${g.id}" ${g.status === 'pending' ? 'disabled' : ''}>Speichern</button>${g.status === 'done' ? `<button class="btn small danger" data-clear="${g.id}">Löschen</button>` : ''}</td>
-    <td><select data-ref="${g.id}">${teamOpts(g)}</select>${g.refereeManual ? ' ✎' : ''}</td>
-    <td><a href="g.html?t=${encodeURIComponent(g.token)}" target="_blank" title="Schiri-Seite öffnen">Link</a></td></tr>`).join('')}
+    <td class="actions"><button class="btn small primary" data-save="${g.id}" ${g.status === 'pending' ? 'disabled' : ''}>Speichern</button>${g.status === 'done' ? `<button class="btn small danger" data-clear="${g.id}" title="Ergebnis löschen">✕</button>` : ''}</td>
+    <td class="narrow"><select data-ref="${g.id}">${teamOpts(g)}</select>${g.refereeManual ? ' ✎' : ''}</td>
+    <td class="narrow"><a href="g.html?t=${encodeURIComponent(g.token)}" target="_blank" title="Schiri-Seite öffnen">Link</a></td></tr>`).join('')}
   </tbody></table></div>`;
 }
 
