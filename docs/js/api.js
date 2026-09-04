@@ -2,7 +2,10 @@
 // oder der lokale Node-Server (server.js), der dieselben Funktionen unter /rpc/<name> anbietet.
 
 const cfg = (typeof window !== 'undefined' && window.VT_CONFIG) || {};
-export const usingSupabase = !!(cfg.supabaseUrl && cfg.supabaseKey);
+// Toleriert Eingaben wie "https://xyz.supabase.co/rest/v1/" oder mit Leerzeichen.
+const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
+const supabaseKey = String(cfg.supabaseKey || '').trim();
+export const usingSupabase = !!(supabaseBase && supabaseKey);
 
 export class ApiError extends Error {
   constructor(message, code) { super(message); this.code = code; }
@@ -11,11 +14,11 @@ export class ApiError extends Error {
 async function rpc(fn, params = {}) {
   let res;
   if (usingSupabase) {
-    const url = `${cfg.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${fn}`;
+    const url = `${supabaseBase}/rest/v1/rpc/${fn}`;
     // Neue Supabase-Keys (sb_publishable_…) werden nur im apikey-Header gesendet,
     // alte anon-Keys (JWT, beginnen mit eyJ…) zusätzlich als Bearer-Token.
-    const headers = { 'Content-Type': 'application/json', apikey: cfg.supabaseKey };
-    if (cfg.supabaseKey.startsWith('eyJ')) headers.Authorization = `Bearer ${cfg.supabaseKey}`;
+    const headers = { 'Content-Type': 'application/json', apikey: supabaseKey };
+    if (supabaseKey.startsWith('eyJ')) headers.Authorization = `Bearer ${supabaseKey}`;
     res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(params) });
   } else {
     res = await fetch(`./rpc/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
