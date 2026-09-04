@@ -1,0 +1,11 @@
+services:
+  volleyballturnier:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      ADMIN_PIN: "bitte-aendern"
+      # PUBLIC_URL: "http://192.168.0.10:3000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
