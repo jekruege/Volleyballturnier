@@ -1,5 +1,4 @@
-'use strict';
-const { evaluate } = require('./results');
+import { evaluate } from './results.js';
 
 // Tabellenberechnung. Sortierung: 1. Siege, 2. Satzdifferenz, 3. Punktdifferenz,
 // 4. direkter Vergleich (nur unter den punktgleichen Teams), 5. gewonnene Punkte, 6. Name.
@@ -75,4 +74,4 @@ function computeStandings(teamIds, games, nameOf = (id) => id) {
   return result;
 }
 
-module.exports = { computeStandings, cmpBasic };
+export { computeStandings, cmpBasic };

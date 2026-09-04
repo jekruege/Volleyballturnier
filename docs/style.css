@@ -123,7 +123,7 @@ details summary { cursor: pointer; font-weight: 600; }
 /* Druck */
 body.print { background: #fff; }
 body.print h1.printtitle { margin: 0.5rem 1rem; }
-body.print > p, body.print > section, body.print > table, body.print > .qrgrid { margin-left: 1rem; margin-right: 1rem; }
+body.print #app > p, body.print #app > section, body.print #app > table, body.print #app > .qrgrid { margin-left: 1rem; margin-right: 1rem; }
 .printbar { padding: 0.5rem 1rem; background: #eef1f4; display: flex; gap: 1rem; align-items: center; }
 .qrgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 .qrcard { border: 2px solid #333; border-radius: 12px; padding: 1rem; text-align: center; page-break-inside: avoid; }

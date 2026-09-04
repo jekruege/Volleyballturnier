@@ -1,4 +1,3 @@
-'use strict';
 // Auswertung eines einzelnen Spiels: Sätze, Punkte, Sieger.
 // Modus 'roundrobin': 2 Sätze, Unentschieden (1:1) möglich.
 // Modus 'ko': Sieger erforderlich. Bei 1:1 nach Sätzen entscheidet ein optionaler
@@ -91,4 +90,4 @@ function formatSets(sets) {
   return sets.map(([a, b]) => `${a}:${b}`).join(', ');
 }
 
-module.exports = { validateSets, evaluate, formatSets, ResultError };
+export { validateSets, evaluate, formatSets, ResultError };

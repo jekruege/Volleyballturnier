@@ -1,8 +1,8 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const T = require('../src/tournament');
-const { validateSets } = require('../src/results');
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as T from '../docs/engine/tournament.js';
+import { validateSets } from '../docs/engine/results.js';
 
 const NAMES15 = ['Rübenzwerge', 'Häää', 'Die Klein Heidemänner', 'Little Gozillas', 'Kontiki', 'Beachrobben', 'Team Hotte', 'raSand_', 'Rübenriesen', 'Hallenstauballergiker', 'Blockwürstchen', 'Gurkengruppe', 'ImPoSand', 'The Joker', 'Beachparty'];
 const NAMES16 = ['Rübenzwerge', 'Sandsturm', 'Beachparty', 'Häää', 'The Joker', 'Cousins', 'Kontiki', 'Beachrobben', 'Blockwürstchen', 'Gurkengruppe', 'Rübenriesen', 'raSand_', 'Team Hotte', 'Little Gozillas', 'Hallenstauballergiker', 'ImPoSand'];

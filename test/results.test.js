@@ -1,7 +1,7 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { validateSets, evaluate, ResultError } = require('../src/results');
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateSets, evaluate, ResultError } from '../docs/engine/results.js';
 
 test('Gruppenspiel: zwei Sätze, Unentschieden möglich', () => {
   const sets = validateSets([['15', '10'], ['12', '15']], 'roundrobin');

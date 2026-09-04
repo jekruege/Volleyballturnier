@@ -1,4 +1,3 @@
-'use strict';
 // Format: Quattro-Mixed mit 15 Teams (3 Gruppen à 5, Jeder gegen Jeden),
 // danach 5 Dreier-Runden (Gold 1/2, Silber 1/2, Bronze) im Jeder-gegen-Jeden,
 // abschließend Finale und Kleines Finale. Entspricht der Vorlage "Turnier15Teams".
@@ -22,7 +21,7 @@ const phase1Slots = GROUP_SLOT_PAIRINGS.map((pair, slotIndex) => ({
   })),
 }));
 
-module.exports = {
+export default {
   id: 'teams15',
   name: 'Quattro Mixed – 15 Teams (3×5, dann Dreier-Runden)',
   teamCount: 15,

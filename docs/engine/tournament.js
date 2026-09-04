@@ -1,15 +1,14 @@
-'use strict';
-const crypto = require('crypto');
-const { getFormat } = require('./formats');
-const { computeStandings, cmpBasic } = require('./standings');
-const { evaluate, formatSets } = require('./results');
-const { assignSlots, assignRefereesForSlot } = require('./scheduler');
+import { getFormat } from './formats/index.js';
+import { computeStandings, cmpBasic } from './standings.js';
+import { evaluate, formatSets } from './results.js';
+import { assignSlots, assignRefereesForSlot } from './scheduler.js';
 
 const KO_LABELS = ['Halbfinale 1', 'Halbfinale 2', 'Finale', 'Spiel um Platz 3'];
 
 function token(len = 10) {
   const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789';
-  const bytes = crypto.randomBytes(len);
+  const bytes = new Uint8Array(len);
+  globalThis.crypto.getRandomValues(bytes);
   let s = '';
   for (let i = 0; i < len; i += 1) s += alphabet[bytes[i] % alphabet.length];
   return s;
@@ -593,8 +592,35 @@ function buildView(state) {
   };
 }
 
-module.exports = {
+export {
   createTournament, refresh, buildView, gameView, setResult, clearResult, setReferee, resetReferees,
   confirmPhase1, reopenPhase1, confirmPhase2, reopenPhase2, proposePlacements, phaseComplete,
   groupStandings, roundStandings, finalRanking, teamName, slotTime, gameById, resolveRef, refLabel, token,
 };
+
+// ---------------------------------------------------------------------------
+// Gemeinsame Regeln für Backend (Node/SQL) und Oberfläche
+
+export const CORRECTION_MINUTES = 15;
+
+/** Entfernt Zugriffs-Tokens (Spiele, Felder) für die öffentliche Ansicht. */
+export function stripTokens(state) {
+  if (!state) return state;
+  const copy = JSON.parse(JSON.stringify(state));
+  for (const g of copy.games) delete g.token;
+  for (const f of copy.tournament.fields) delete f.token;
+  return copy;
+}
+
+/** Darf ein Schiri-Team dieses Spiel (noch) eintragen bzw. korrigieren? */
+export function refereeCanEdit(state, game, minutes = CORRECTION_MINUTES, now = Date.now()) {
+  if (!game) return { ok: false, reason: 'Spiel nicht gefunden.' };
+  if ((game.phase === 1 && state.phase > 1) || (game.phase === 2 && state.phase > 2)) {
+    return { ok: false, reason: 'Diese Phase ist abgeschlossen. Änderungen nur noch durch die Turnierleitung.' };
+  }
+  if (!game.sets) return { ok: true };
+  if (game.enteredBy === 'admin') return { ok: false, reason: 'Dieses Ergebnis wurde von der Turnierleitung eingetragen und kann nur dort geändert werden.' };
+  const age = now - Date.parse(game.enteredAt || 0);
+  if (age > minutes * 60 * 1000) return { ok: false, reason: `Die Korrekturfrist von ${minutes} Minuten ist abgelaufen. Bitte an die Turnierleitung wenden.` };
+  return { ok: true };
+}

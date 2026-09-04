@@ -1,16 +1,16 @@
 {
   "name": "volleyballturnier",
   "version": "1.0.0",
-  "description": "Turnierverwaltung für Quattro-Mixed-Beachvolleyball-Turniere (15/16 Teams) mit Ergebniseingabe per QR-Code",
+  "description": "Turnierverwaltung für Quattro-Mixed-Beachvolleyball-Turniere (15/16 Teams): statische Web-App (GitHub Pages) mit Supabase oder lokalem Node-Server, Ergebniseingabe per QR-Code",
   "main": "server.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test test/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "license": "MIT",
   "dependencies": {

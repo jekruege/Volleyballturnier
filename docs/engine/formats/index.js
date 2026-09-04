@@ -1,6 +1,5 @@
-'use strict';
-const teams15 = require('./teams15');
-const teams16 = require('./teams16');
+import teams15 from './teams15.js';
+import teams16 from './teams16.js';
 
 const FORMATS = { [teams15.id]: teams15, [teams16.id]: teams16 };
 
@@ -17,4 +16,4 @@ function listFormats() {
   }));
 }
 
-module.exports = { FORMATS, getFormat, listFormats };
+export { FORMATS, getFormat, listFormats };

@@ -1,7 +1,7 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { computeStandings } = require('../src/standings');
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { computeStandings } from '../docs/engine/standings.js';
 
 const g = (a, b, sets) => ({ team1Id: a, team2Id: b, sets, mode: 'roundrobin' });
 

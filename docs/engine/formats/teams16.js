@@ -1,4 +1,3 @@
-'use strict';
 // Format: Quattro-Mixed mit 16 Teams (2 Gruppen à 8, 4 Spiele je Team),
 // danach 4 K.o.-Runden à 4 Teams (2 Halbfinale, Finale, Spiel um Platz 3),
 // abschließend Finale und Kleines Finale. Entspricht der Vorlage "2026Quattro_Mixed16".
@@ -39,7 +38,7 @@ const phase1Slots = SLOT_LAYOUT.map((entries, slotIndex) => ({
   }),
 }));
 
-module.exports = {
+export default {
   id: 'teams16',
   name: 'Quattro Mixed – 16 Teams (2×8, dann K.o.-Runden)',
   teamCount: 16,

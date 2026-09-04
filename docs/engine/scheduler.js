@@ -1,4 +1,3 @@
-'use strict';
 // Zeitplanung der 2./3. Phase und Schiedsrichter-Zuteilung.
 
 function refKey(ref) {
@@ -113,4 +112,4 @@ function assignRefereesForSlot(slotGames, teams, refCount, prevSlotPlayers, same
   return result;
 }
 
-module.exports = { assignSlots, assignRefereesForSlot };
+export { assignSlots, assignRefereesForSlot };
