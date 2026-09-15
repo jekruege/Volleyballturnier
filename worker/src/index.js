@@ -1,5 +1,6 @@
 // Cloudflare Worker: stellt die RPC-Funktionen der App (siehe src/rpc.js) unter POST /rpc/<name>
-// bereit. Der komplette Turnierstand liegt in einem einzigen Durable Object ("current"), das
+// bereit und liefert die Web-App aus docs/ als statische Dateien aus (siehe wrangler.jsonc).
+// Der komplette Turnierstand liegt in einem einzigen Durable Object ("current"), das
 // Anfragen nacheinander verarbeitet – so gehen gleichzeitige Ergebniseingaben nicht verloren.
 import { DurableObject } from 'cloudflare:workers';
 import { TournamentCore } from './core.js';

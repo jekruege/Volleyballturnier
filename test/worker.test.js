@@ -129,6 +129,15 @@ test('Worker: HTTP-Schicht', async () => {
   res = await call('GET', '/');
   assert.equal(res.status, 200);
   assert.match(await res.text(), /Backend läuft/);
+  res = await call('GET', '/health');
+  assert.equal(res.status, 200);
+  const assets = { fetch: async (req) => new Response(`asset ${new URL(req.url).pathname}`) };
+  res = await call('GET', '/', null, {}, { ASSETS: assets });
+  assert.equal(await res.text(), 'asset /index.html');
+  res = await call('GET', '/config.js');
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('Content-Type'), /javascript/);
+  assert.match(await res.text(), /apiUrl: ""/);
 
   res = await call('POST', '/rpc/vt_pin_status', '{}', { 'Content-Type': 'application/json', Origin: 'https://jens.github.io' });
   assert.equal(res.status, 200);

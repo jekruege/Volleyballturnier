@@ -1,0 +1,25 @@
+// Cloudflare Worker: Backend (worker/src/) + die Web-App aus docs/ als statische Dateien.
+// Deploy: automatisch über die Cloudflare-Git-Integration (Workers & Pages → Import a repository)
+// oder von Hand mit `npx wrangler deploy` im Stammverzeichnis des Repositories.
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "volleyballturnier",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-06-01",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "docs",
+    "binding": "ASSETS",
+    // Dateien nur unter ihrem exakten Namen ausliefern (kein Umleiten von /admin.html auf /admin),
+    // damit Links und QR-Codes genauso funktionieren wie auf GitHub Pages. "/" liefert der Worker.
+    "html_handling": "none",
+    // Diese Pfade bearbeitet immer der Worker, auch wenn es eine gleichnamige Datei in docs/ gibt.
+    "run_worker_first": ["/rpc/*", "/config.js", "/health"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "TOURNAMENT", "class_name": "Tournament" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Tournament"] }]
+  // Optional: RPC-Aufrufe nur von bestimmten Seiten zulassen, z. B.
+  // "vars": { "ALLOWED_ORIGINS": "https://<benutzername>.github.io" }
+}

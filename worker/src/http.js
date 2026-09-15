@@ -35,9 +35,20 @@ export async function handleRequest(request, env, run) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
 
   const url = new URL(request.url);
+  // Startseite der mitgelieferten App (Assets werden nur unter exaktem Dateinamen ausgeliefert).
+  if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/' && env.ASSETS) {
+    return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
+  }
   if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
     return new Response('Volleyballturnier-Backend läuft. Diese Adresse gehört als apiUrl in docs/config.js.\n', {
       status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...cors },
+    });
+  }
+  // Die vom Worker ausgelieferte App spricht immer mit diesem Worker (wie beim lokalen Server):
+  // leere Konfiguration → api.js nutzt ./rpc/<name> auf derselben Adresse.
+  if (request.method === 'GET' && url.pathname === '/config.js') {
+    return new Response('window.VT_CONFIG = { apiUrl: "", supabaseUrl: "", supabaseKey: "" };\n', {
+      status: 200, headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', ...cors },
     });
   }
 
