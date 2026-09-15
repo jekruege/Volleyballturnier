@@ -1,11 +1,15 @@
-// Backend-Adapter: entweder Supabase (RPC-Funktionen aus supabase/schema.sql)
-// oder der lokale Node-Server (server.js), der dieselben Funktionen unter /rpc/<name> anbietet.
+// Backend-Adapter: Cloudflare Worker (worker/), Supabase (RPC-Funktionen aus supabase/schema.sql)
+// oder der lokale Node-Server (server.js) – alle bieten dieselben Funktionen an.
 
 const cfg = (typeof window !== 'undefined' && window.VT_CONFIG) || {};
-// Toleriert Eingaben wie "https://xyz.supabase.co/rest/v1/" oder mit Leerzeichen.
+// Toleriert Eingaben wie "https://xyz.supabase.co/rest/v1/", ".../rpc" oder mit Leerzeichen.
+const apiBase = String(cfg.apiUrl || '').trim().replace(/\/+$/, '').replace(/\/rpc$/, '');
 const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
 const supabaseKey = String(cfg.supabaseKey || '').trim();
-export const usingSupabase = !!(supabaseBase && supabaseKey);
+export const usingWorker = !!apiBase;
+export const usingSupabase = !usingWorker && !!(supabaseBase && supabaseKey);
+/** Backend im Internet (Worker oder Supabase): PIN wird in der App festgelegt und geändert. */
+export const usingRemote = usingWorker || usingSupabase;
 
 export class ApiError extends Error {
   constructor(message, code) { super(message); this.code = code; }
@@ -13,7 +17,9 @@ export class ApiError extends Error {
 
 async function rpc(fn, params = {}) {
   let res;
-  if (usingSupabase) {
+  if (usingWorker) {
+    res = await fetch(`${apiBase}/rpc/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+  } else if (usingSupabase) {
     const url = `${supabaseBase}/rest/v1/rpc/${fn}`;
     // Neue Supabase-Keys (sb_publishable_…) werden nur im apikey-Header gesendet,
     // alte anon-Keys (JWT, beginnen mit eyJ…) zusätzlich als Bearer-Token.
@@ -27,8 +33,8 @@ async function rpc(fn, params = {}) {
   const text = await res.text();
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
   if (!res.ok) {
-    if (!usingSupabase && (res.status === 405 || res.status === 404) && /github\.io$/.test(location.hostname)) {
-      throw new ApiError('Keine Datenbank konfiguriert: Bitte Supabase-URL und Publishable Key in docs/config.js eintragen (siehe README, Schritt 2).', 'NO_CONFIG');
+    if (!usingRemote && (res.status === 405 || res.status === 404) && /github\.io$/.test(location.hostname)) {
+      throw new ApiError('Keine Datenbank konfiguriert: Bitte in docs/config.js die Adresse des Cloudflare Workers (apiUrl) oder Supabase-URL und Publishable Key eintragen (siehe README, Einrichtung).', 'NO_CONFIG');
     }
     const msg = (data && (data.message || data.error)) || `Fehler ${res.status}`;
     throw new ApiError(msg, data && data.code);
