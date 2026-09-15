@@ -2,7 +2,7 @@
 import * as T from '../engine/tournament.js';
 import { listFormats } from '../engine/formats/index.js';
 import { validateSets } from '../engine/results.js';
-import { api, adminMutate, usingSupabase } from './api.js';
+import { api, adminMutate, usingRemote } from './api.js';
 import { esc, standingsTable, phase2Section } from './render.js';
 
 const app = document.getElementById('app');
@@ -57,7 +57,7 @@ function renderLogin(error) {
   app.innerHTML = `<div class="card" style="max-width:420px;margin:2rem auto"><h1>Anmeldung</h1>
     <form class="stack" id="login"><label>PIN der Turnierleitung <input type="password" name="pin" autofocus required></label>
     ${error ? `<p class="error">${esc(error)}</p>` : ''}<button class="btn primary">Anmelden</button></form>
-    <p class="muted small">${usingSupabase ? 'Die PIN wurde bei der ersten Einrichtung festgelegt und kann unter „Teams & Einstellungen“ geändert werden.' : 'Die PIN wird beim Start des lokalen Servers über die Umgebungsvariable ADMIN_PIN gesetzt.'}</p></div>`;
+    <p class="muted small">${usingRemote ? 'Die PIN wurde bei der ersten Einrichtung festgelegt und kann unter „Teams & Einstellungen“ geändert werden.' : 'Die PIN wird beim Start des lokalen Servers über die Umgebungsvariable ADMIN_PIN gesetzt.'}</p></div>`;
   document.getElementById('login').addEventListener('submit', async (e) => {
     e.preventDefault();
     pin = new FormData(e.target).get('pin');
@@ -280,7 +280,7 @@ function renderSettings() {
     <div class="tablewrap"><table class="admin"><thead><tr><th>Gruppe</th><th>Nr.</th><th>Name</th><th>Verein</th><th>Ansprechpartner</th><th></th></tr></thead><tbody>
     ${view.teams.map((tm) => `<tr><td>${tm.group}</td><td>${tm.pos}</td><td><input type="text" data-team="${tm.id}|name" value="${esc(tm.name)}"></td><td><input type="text" data-team="${tm.id}|club" value="${esc(tm.club || '')}"></td><td><input type="text" data-team="${tm.id}|contact" value="${esc(tm.contact || '')}"></td><td><button class="btn small" data-saveteam="${tm.id}">Speichern</button></td></tr>`).join('')}
     </tbody></table></div></div>
-    <div class="card"><h2>PIN der Turnierleitung</h2>${usingSupabase ? `<form class="stack" id="pinchange"><div class="grid2"><label>Aktuelle PIN <input type="password" name="old" required></label><label>Neue PIN <input type="password" name="new" required minlength="4"></label></div><button class="btn">PIN ändern</button></form>` : '<p class="muted small">Im lokalen Modus wird die PIN beim Start über die Umgebungsvariable ADMIN_PIN gesetzt.</p>'}</div>
+    <div class="card"><h2>PIN der Turnierleitung</h2>${usingRemote ? `<form class="stack" id="pinchange"><div class="grid2"><label>Aktuelle PIN <input type="password" name="old" required></label><label>Neue PIN <input type="password" name="new" required minlength="4"></label></div><button class="btn">PIN ändern</button></form>` : '<p class="muted small">Im lokalen Modus wird die PIN beim Start über die Umgebungsvariable ADMIN_PIN gesetzt.</p>'}</div>
     <div class="card"><h2>Sicherung</h2><p class="inline"><button class="btn" data-act="export">Turnierdaten exportieren (JSON)</button> <label class="btn">Sicherung einspielen <input type="file" id="importFile" accept="application/json" hidden></label></p></div>
     <div class="card dangerzone"><h2>Turnier zurücksetzen</h2><p class="muted small">Löscht alle Teams, Spiele und Ergebnisse. Vorher exportieren!</p>
     <p class="inline"><input type="text" id="resetConfirm" placeholder="LÖSCHEN eingeben"> <button class="btn danger" data-act="reset">Turnier löschen</button></p></div>`;
@@ -395,7 +395,7 @@ function bind() {
     if (pin) { try { await api.login(pin); } catch { pin = ''; } }
     if (pin) await refresh(); else render();
   } catch (err) {
-    app.innerHTML = `<p class="error">Verbindung zur Datenbank fehlgeschlagen: ${esc(err.message)}</p><p class="muted">Prüfe die Werte in <code>config.js</code> (Supabase-URL und Key) bzw. ob der lokale Server läuft.</p>`;
+    app.innerHTML = `<p class="error">Verbindung zur Datenbank fehlgeschlagen: ${esc(err.message)}</p><p class="muted">Prüfe die Werte in <code>config.js</code> (Worker-Adresse bzw. Supabase-URL und Key) bzw. ob der lokale Server läuft.</p>`;
   }
 })();
 setInterval(() => { if (pin && view && section !== 'games') refresh().catch(() => {}); }, 30000);

@@ -5,8 +5,9 @@ Excel/LibreOffice-Datei. Die Anwendung erzeugt den kompletten Spielplan (inkl. S
 Zuteilung), die Schiedsrichter-Teams tragen die Ergebnisse **per QR-Code am Feld** ein, und
 Tabellen, Platzierungen sowie die Endplatzierung werden **automatisch und sortiert** berechnet.
 
-Die App ist eine statische Web-Seite (läuft auf **GitHub Pages**) und speichert die Daten in einer
-kostenlosen **Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Node.js im WLAN.
+Die App ist eine statische Web-Seite (läuft auf **GitHub Pages**) und speichert die Daten in einem
+kostenlosen Backend: wahlweise ein **Cloudflare Worker** (empfohlen, schläft nie ein) oder eine
+**Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Node.js im WLAN.
 
 ## Funktionen
 
@@ -38,9 +39,65 @@ kostenlosen **Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Nod
   Ergebnisse korrigieren/löschen, Schiris ändern, Phasen abschließen/wieder öffnen, Teamnamen
   ändern, PIN ändern, Export/Import als JSON-Sicherung, Zurücksetzen.
 
-## Einrichtung: GitHub Pages + Supabase (einmalig, ca. 15 Minuten)
+## Einrichtung: GitHub Pages + kostenloses Backend (einmalig, ca. 15 Minuten)
 
-### 1. Supabase-Projekt anlegen
+Der Turnierstand muss im Internet liegen, damit Schiri-Handys und Turnierleitung denselben Stand
+sehen. Zwei kostenlose Varianten stehen zur Wahl:
+
+| | Variante A: Cloudflare Worker | Variante B: Supabase |
+| --- | --- | --- |
+| Kosten | kostenlos, keine Zahlungsdaten | kostenlos, keine Zahlungsdaten |
+| Pausiert bei Nichtnutzung? | nein | ja, nach 7 Tagen ohne Datenbankzugriffe; im Dashboard wieder startbar, nach 90 Tagen Pause wird das Projekt gelöscht |
+| Einrichtung | Node.js auf dem Rechner **oder** GitHub Actions | nur im Browser |
+| Kontingent | 100.000 Anfragen pro Tag | 500 MB Datenbank, 2 aktive Projekte |
+
+Empfehlung: **Variante A**, weil das Backend zwischen zwei Turnieren nicht einschläft und vor dem
+Turnier nichts reaktiviert werden muss.
+
+### 1A. Cloudflare Worker veröffentlichen
+
+1. Kostenlos registrieren auf https://dash.cloudflare.com/sign-up (keine Zahlungsdaten nötig).
+2. Im Dashboard links **Workers & Pages** öffnen. Beim ersten Mal fragt Cloudflare nach einer
+   **workers.dev-Subdomain** (frei wählbar, z. B. `beachverein`). Das Backend ist danach unter
+   `https://volleyballturnier.<subdomain>.workers.dev` erreichbar.
+3. Backend veröffentlichen, entweder
+
+   **mit Node.js auf dem eigenen Rechner** ([Node.js](https://nodejs.org) ab Version 20; im Ordner
+   des Repositories):
+
+   ```bash
+   cd worker
+   npm install
+   npx wrangler login     # öffnet den Browser: Zugriff für Wrangler erlauben
+   npx wrangler deploy
+   ```
+
+   Am Ende steht die Adresse des Workers in der Ausgabe.
+
+   **oder über GitHub Actions** (ohne Installation auf dem Rechner):
+   1. Im Cloudflare-Dashboard oben rechts Profil → **API Tokens** → **Create Token** → Vorlage
+      **Edit Cloudflare Workers** → Continue → Create Token. Den Token kopieren (wird nur einmal angezeigt).
+   2. Die **Account ID** steht unter Workers & Pages rechts in der Seitenleiste.
+   3. Im GitHub-Repository: Settings → Secrets and variables → Actions → **New repository secret**,
+      zweimal: `CLOUDFLARE_API_TOKEN` (der Token) und `CLOUDFLARE_ACCOUNT_ID`.
+   4. Reiter **Actions** → Workflow **„Cloudflare Worker deployen“** → **Run workflow**. Danach läuft
+      der Workflow auch automatisch, sobald sich Backend oder Turnier-Engine auf `main` ändern.
+4. Die Adresse im Browser öffnen: Es erscheint „Volleyballturnier-Backend läuft“.
+
+Der Worker speichert den Turnierstand in einem Durable Object (Cloudflare-Speicher auf SQLite-Basis)
+und verarbeitet alle Anfragen nacheinander; gleichzeitige Ergebniseingaben an mehreren Feldern gehen
+nicht verloren. Die PIN wird nur als Hash gespeichert. Die Adresse darf öffentlich sein: Wer sie
+kennt, kann wie beim Supabase-Key nur lesen, Ergebnisse per Token eintragen und Änderungen nur mit
+PIN vornehmen. Optional lässt sich der Zugriff auf die eigene GitHub-Pages-Adresse beschränken
+(`ALLOWED_ORIGINS` in `worker/wrangler.jsonc`, danach erneut deployen).
+
+**Kontingent:** 100.000 Anfragen pro Tag (Zähler beginnt um 00:00 UTC neu, also um 2 Uhr MESZ).
+Die Live-Übersicht fragt alle 20 Sekunden nach, also 180 Anfragen pro Stunde je geöffneter Seite:
+20 gleichzeitig geöffnete Live-Ansichten über 10 Stunden ergeben etwa 36.000 Anfragen. Für Zuschauer
+daher lieber die große Anzeige (`display.html`) am Beamer nutzen, als hunderte Handys aktualisieren
+zu lassen.
+
+### 1B. Supabase-Projekt anlegen
 
 1. Auf https://supabase.com kostenlos registrieren und **New project** anlegen (Name frei, Region
    z. B. Frankfurt, ein Datenbank-Passwort vergeben – das brauchst du später nicht mehr).
@@ -56,18 +113,33 @@ kostenlosen **Supabase**-Datenbank. Alternativ läuft sie komplett lokal mit Nod
 
 ### 2. Zugangsdaten in der App eintragen
 
-In der Datei [`docs/config.js`](docs/config.js) die beiden Werte eintragen (direkt auf GitHub über
-das Stift-Symbol bearbeiten und committen):
+In der Datei [`docs/config.js`](docs/config.js) die Werte eintragen (direkt auf GitHub über das
+Stift-Symbol bearbeiten und committen). Variante A (Cloudflare Worker):
 
 ```js
 window.VT_CONFIG = {
+  apiUrl: 'https://volleyballturnier.<subdomain>.workers.dev',
+  supabaseUrl: '',
+  supabaseKey: '',
+};
+```
+
+Variante B (Supabase):
+
+```js
+window.VT_CONFIG = {
+  apiUrl: '',
   supabaseUrl: 'https://xxxxxxxxxxxx.supabase.co',
   supabaseKey: 'sb_publishable_…',
 };
 ```
 
-Der Publishable/anon-Key darf öffentlich sein: Er erlaubt nur, was die Funktionen aus `schema.sql`
-zulassen (lesen, Ergebnisse per Token eintragen, Änderungen nur mit PIN).
+Ist `apiUrl` gesetzt, werden die Supabase-Werte ignoriert. Der Publishable/anon-Key darf öffentlich
+sein: Er erlaubt nur, was die Funktionen aus `schema.sql` zulassen (lesen, Ergebnisse per Token
+eintragen, Änderungen nur mit PIN).
+
+**Umzug von Supabase zum Worker:** Im Admin-Bereich unter „Teams & Einstellungen“ den Turnierstand
+als JSON exportieren, `apiUrl` eintragen, im neuen Backend die PIN festlegen und die Datei importieren.
 
 ### 3. GitHub Pages einschalten
 
@@ -140,8 +212,8 @@ ADMIN_PIN=geheim npm start
 ```
 
 Übersicht auf `http://localhost:3000/`, Turnierleitung unter `http://localhost:3000/admin.html`.
-Der lokale Server ignoriert die Supabase-Werte in `docs/config.js` (mit `SUPABASE_CONFIG=1` nutzt
-er sie stattdessen).
+Der lokale Server ignoriert die Worker-/Supabase-Werte in `docs/config.js` (mit `SUPABASE_CONFIG=1`
+nutzt er sie stattdessen).
 Damit die Schiri-Handys die QR-Links erreichen, müssen sie im selben WLAN sein; die Druckseiten
 über die IP-Adresse des Rechners aufrufen (z. B. `http://192.168.0.23:3000/print.html?type=qr`),
 dann enthalten die QR-Codes diese Adresse. Die Daten liegen in `data/turnier.json`.
@@ -173,15 +245,21 @@ Mit Docker: `docker compose up -d` (PIN in `docker-compose.yml` anpassen).
 
 - `docs/` – die komplette Web-App (statisch, kein Build-Schritt): Seiten, Stylesheet, Turnier-Engine
   (`docs/engine/`, ES-Module, läuft im Browser und in Node), Backend-Adapter (`docs/js/api.js`).
-- `supabase/schema.sql` – Tabellen und SQL-Funktionen (PIN-Prüfung, Ergebnis-Eintrag per Token,
-  optimistische Sperre über eine Versionsnummer). Die App spricht nur über diese Funktionen mit der
-  Datenbank; direkter Tabellenzugriff ist gesperrt.
+- `src/rpc.js` – die Backend-Funktionen (PIN-Prüfung, Ergebnis-Eintrag per Token, optimistische
+  Sperre über eine Versionsnummer) in JavaScript; genutzt vom lokalen Server und vom Cloudflare Worker.
+- `worker/` – Cloudflare Worker: bietet die Funktionen unter `POST /rpc/<name>` an, Turnierstand und
+  PIN-Hash liegen in einem Durable Object (`worker/src/core.js`, `worker/src/http.js`,
+  `worker/wrangler.jsonc`). Deploy mit `npx wrangler deploy` oder über den GitHub-Actions-Workflow
+  `.github/workflows/deploy-worker.yml`. Nach Änderungen an der Engine muss der Worker neu deployt
+  werden, weil er sie mitbündelt.
+- `supabase/schema.sql` – dieselben Funktionen als SQL für Supabase. Die App spricht nur über diese
+  Funktionen mit der Datenbank; direkter Tabellenzugriff ist gesperrt.
 - `server.js` – lokaler Modus: liefert `docs/` aus und bietet dieselben Funktionen unter
   `/rpc/<name>` an, Speicherung als JSON-Datei.
 - Neue Turnierformate: Datei in `docs/engine/formats/` anlegen (siehe `teams15.js`, `teams16.js`)
   und in `index.js` registrieren.
 
 ```bash
-npm test        # Tests: Ergebnisregeln, Tabellen, Spielplan, kompletter Turnierdurchlauf, RPC-Server
+npm test        # Tests: Ergebnisregeln, Tabellen, Spielplan, kompletter Turnierdurchlauf, RPC-Server, Worker
 npm run dev     # lokaler Server mit automatischem Neustart bei Änderungen
 ```

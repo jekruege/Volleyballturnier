@@ -1,0 +1,59 @@
+# Veröffentlicht das Cloudflare-Worker-Backend (Ordner worker/). Siehe README, „Variante A“.
+# Voraussetzung: Repository-Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID.
+# Läuft manuell (Actions → „Cloudflare Worker deployen“ → Run workflow) und automatisch,
+# wenn sich Backend oder Turnier-Engine auf main ändern. Ohne Secrets wird nichts getan.
+name: Cloudflare Worker deployen
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'src/rpc.js'
+      - 'docs/engine/**'
+      - '.github/workflows/deploy-worker.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prüfen, ob Cloudflare-Zugangsdaten hinterlegt sind
+        id: check
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Secrets CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID fehlen – Deploy übersprungen (siehe README)."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.configured == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.configured == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Abhängigkeiten installieren
+        if: steps.check.outputs.configured == 'true'
+        working-directory: worker
+        run: npm ci
+
+      - name: Tests
+        if: steps.check.outputs.configured == 'true'
+        run: npm ci && npm test
+
+      - name: Deploy
+        if: steps.check.outputs.configured == 'true'
+        working-directory: worker
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

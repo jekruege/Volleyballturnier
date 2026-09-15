@@ -3,3 +3,8 @@ data/*.json
 data/*.json.tmp
 .env
 npm-debug.log*
+
+# Cloudflare Worker
+.wrangler/
+worker/dist/
+worker/.dev.vars
